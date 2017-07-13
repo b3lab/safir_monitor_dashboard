@@ -1,0 +1,187 @@
+<hz-page-header header="{$ 'Hypervisor Monitor' | translate $}"></hz-page-header>
+
+<div ng-controller="HypervisorMonitorController as ctrl">
+   <div class="row" style="background: #f9f9f9; border-radius: 6px;">
+        <div align="center" style="margin-top: 20px">
+            <div class="form-group">
+                <div class="btn-group">
+                    <label class="btn btn-default" id="resources"
+                           ng-repeat="option in ctrl.toggleButtonOptions"
+                           ng-model="ctrl.toggled"
+                           btn-radio="option.value">{$ ::option.label $}</label>
+                </div>
+            </div>
+        </div>
+        <div ng-if="ctrl.toggled == 1">
+            <nvd3 options="ctrl.chartOptions" config="ctrl.config" data="ctrl.totalHostCpuData"
+                  class="with-3d-shadow with-transitions"></nvd3>
+        </div>
+        <div ng-if="ctrl.toggled == 2">
+            <nvd3 options="ctrl.chartOptions" config="ctrl.config" data="ctrl.totalHostRamData"
+                  class="with-3d-shadow with-transitions"></nvd3>
+        </div>
+        <div ng-if="ctrl.toggled == 3">
+            <nvd3 options="ctrl.chartOptions" config="ctrl.config" data="ctrl.totalHostDiskData"
+                  class="with-3d-shadow with-transitions"></nvd3>
+        </div>
+        <div ng-if="ctrl.toggled == 4">
+            <nvd3 options="ctrl.networkChartOptions" config="ctrl.config"
+                  data="ctrl.totalHostIncomingNetworkData" class="with-3d-shadow with-transitions"></nvd3>
+        </div>
+        <div ng-if="ctrl.toggled == 5">
+            <nvd3 options="ctrl.networkChartOptions" config="ctrl.config"
+                  data="ctrl.totalHostOutgoingNetworkData" class="with-3d-shadow with-transitions"></nvd3>
+        </div>
+    </div>
+
+
+    <table hz-table ng-cloak
+           st-table="ctrl.displayedCollection"
+           st-safe-src="ctrl.hostList"
+           default-sort="name"
+           default-sort-reverse="false"
+           class="table table-striped table-rsp table-detail">
+        <!--
+          TODO(jpomero): This table pattern does not allow for extensibility and should be revisited
+          once horizon implements a better one.
+         -->
+        <thead>
+        <tr>
+            <!--
+              Table-batch-actions:
+              This is where batch actions like searching, creating, and deleting.
+            -->
+        </tr>
+
+        <tr>
+            <!--
+              Table-column-headers:
+              This is where we declaratively define the table column headers.
+              Include select-col if you want to select all.
+              Include expander if you want to inline details.
+              Include action-col if you want to perform actions.
+            -->
+            <th class="multi_select_column">
+                <input type="checkbox"
+                       ng-model="ctrl.allselected"
+                       hz-select-all="ctrl.displayedCollection"
+                       ng-click="ctrl.selectAll()">
+            </th>
+
+            <th class="expander"></th>
+
+            <th class="rsp-p1" st-sort="hypervisor_hostname" st-sort-default="name" translate>Name</th>
+            <th class="rsp-p1" st-sort="hypervisor_type" translate>Type</th>
+            <th class="rsp-p1" st-sort="host_ip" translate>IP</th>
+            <th class="rsp-p1" st-sort="state" translate>State</th>
+            <th class="rsp-p1" st-sort="status" translate>Status</th>
+            <th class="rsp-p1" st-sort="running_vms" translate>Running VMs</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <!--
+          Table-rows:
+          This is where we declaratively define the table columns.
+          Include select-col if you want to select all.
+          Include expander if you want to inline details.
+          Include action-col if you want to perform actions.
+          rsp-p1 rsp-p2 are responsive priority as user resizes window.
+        -->
+        <tr ng-repeat-start="item in ctrl.displayedCollection track by item.id"
+            ng-class="{'st-selected': checked[item.id]}">
+
+            <td class="multi_select_column">
+                <input type="checkbox"
+                       ng-model="item.selected"
+                       hz-select="item"
+                       ng-change="ctrl.filterUtils()">
+            </td>
+            <td class="expander">
+        <span class="fa fa-chevron-right"
+              hz-expand-detail
+              duration="200">
+        </span>
+            </td>
+            <td class="rsp-p1">{$ ::item.hypervisor_hostname $}</td>
+            <td class="rsp-p1">{$ ::item.hypervisor_type $}</td>
+            <td class="rsp-p1">{$ ::item.host_ip $}</td>
+            <td class="rsp-p1">{$ ::item.state $}</td>
+            <td class="rsp-p1">{$ ::item.status $}</td>
+            <td class="rsp-p1">{$ ::item.running_vms $}</td>
+            <td class="actions_column">
+                <!--
+                Table-row-action-column:
+                Actions taken here apply to a single item/row.
+                -->
+                <actions allowed="ctrl.rowActions.actions" type="row" item="item"></actions>
+            </td>
+        </tr>
+
+        <tr ng-repeat-end class="detail-row">
+            <!--
+              Detail-row:
+              Contains detailed information on this item.
+              Can be toggled using the chevron button.
+              Ensure colspan is greater or equal to number of column-headers.
+            -->
+            <td class="detail" colspan="9">
+                <!--
+                  The responsive columns that disappear typically should reappear here
+                  with the same responsive priority that they disappear.
+                  E.g. table header with rsp-p2 should be here with rsp-alt-p2
+                -->
+                <div>
+                    <dl class="dl-horizontal">
+                        <dt>{$ 'Name' | translate $}</dt>
+                        <dd>{$ item.hypervisor_hostname $}</dd>
+                        <dt>{$ 'ID' | translate $}</dt>
+                        <dd>{$ item.id $}</dd>
+                        <dt>{$ 'Status' | translate $}</dt>
+                        <dd>{$ item.status $}</dd>
+                        <dt>{$ 'Running VMs' | translate $}</dt>
+                        <dd>{$ item.running_vms $}</dd>
+                    </dl>
+
+                    <h4>{$ 'Specs' | translate $}</h4>
+                    <hr class="header_rule">
+                    <dl class="dl-horizontal">
+                        <dt>{$ 'VCPUs' | translate $}</dt>
+                        <dd>{$ item.vcpus $} {$ 'VCPU' | translate $}</dd>
+                        <dt>{$ 'RAM' | translate $}</dt>
+                        <dd>{$ item.memory_mb $} {$ 'MB' | translate $}</dd>
+                        <dt>{$ 'Disk' | translate $}</dt>
+                        <dd>{$ item.local_gb $} {$ 'GB' | translate $}</dd>
+                    </dl>
+
+                    <h4>{$ 'Current Resource Usage' | translate $}</h4>
+                    <hr class="header_rule">
+                    <dl class="dl-horizontal">
+                        <dt>{$ 'CPU Usage' | translate $}</dt>
+                        <dd>{$ item.cpuUsage[item.cpuUsage.length-1].y $} {$ '%' $}</dd>
+                        <dt>{$ 'RAM Usage' | translate $}</dt>
+                        <dd>{$ item.ramUsage[item.ramUsage.length-1].y $} {$ '%' $}</dd>
+                        <dt>{$ 'Disk Usage' | translate $}</dt>
+                        <dd>{$ item.diskUsage[item.diskUsage.length-1].y $} {$ '%' $}</dd>
+                        <dt>{$ 'Incoming Network BW' | translate $}</dt>
+                        <dd>{$ item.incomingNetworkUsage[item.incomingNetworkUsage.length-1].y $} {$ 'Mbps' | translate
+                            $}
+                        </dd>
+                        <dt>{$ 'Outgoing Network BW' | translate $}</dt>
+                        <dd>{$ item.outgoingNetworkUsage[item.outgoingNetworkUsage.length-1].y $} {$ 'Mbps' | translate
+                            $}
+                        </dd>
+                    </dl>
+                </div>
+            </td>
+        </tr>
+
+        </tbody>
+        <!--
+          Table-footer:
+          This is where we display number of items and pagination controls.
+        -->
+        <tfoot hz-table-footer items="ctrl.displayedCollection"></tfoot>
+
+    </table>
+</div>

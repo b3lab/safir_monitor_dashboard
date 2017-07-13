@@ -1,0 +1,18 @@
+{% extends 'admin/project_monitor/base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Monitor" %}{% endblock %}
+{% block page_header %}
+    <script src='{{ STATIC_URL }}dashboard/admin/project_monitor/js/angular.js' type='text/javascript' charset='utf-8'></script>
+    <script src='{{ STATIC_URL }}dashboard/admin/project_monitor/js/angular-nvd3.js' type='text/javascript' charset='utf-8'></script>
+    <script src='{{ STATIC_URL }}dashboard/admin/project_monitor/js/d3.js' type='text/javascript' charset='utf-8'></script>
+    <script src='{{ STATIC_URL }}dashboard/admin/project_monitor/js/nv.d3.js' type='text/javascript' charset='utf-8'></script>
+    <script src='{{ STATIC_URL }}dashboard/admin/project_monitor/js/multiselect.js' type='text/javascript' charset='utf-8'></script>
+{% endblock %}
+
+{% block ng_route_base %}
+  <base href="{{ WEBROOT }}">
+{% endblock %}
+
+{% block main %}
+  <div ng-view></div>
+{% endblock %}

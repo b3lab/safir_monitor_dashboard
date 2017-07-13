@@ -1,0 +1,31 @@
+Metadata-Version: 1.1
+Name: monitor-dashboard
+Version: 0.0.1.dev313
+Summary: Horizon System Monitor panel with AngularJS
+Home-page: http://www.b3lab.org/
+Author: B3LAB
+Author-email: celik.esra@tubitak.gov.tr
+License: UNKNOWN
+Description: Sample for the summit plugin lab
+        ================================
+        
+        starting with ubuntu 14.04 image
+        ::
+        
+            sudo apt-get install -y git
+            git clone http://github.com/openstack-dev/devstack
+            cd devstack
+            git checkout stable/mitaka
+            wget http://bitbucket.b3lab.org/scm/ba/safir_monitor_dashboard/master/local.conf
+            ./stack.sh
+        
+        
+Platform: UNKNOWN
+Classifier: Environment :: OpenStack
+Classifier: Intended Audience :: Information Technology
+Classifier: Intended Audience :: System Administrators
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Operating System :: POSIX :: Linux
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.7

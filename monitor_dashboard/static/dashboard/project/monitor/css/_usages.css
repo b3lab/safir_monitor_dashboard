@@ -1,0 +1,17 @@
+.d3_usages_bar {
+  text-align: center;
+}
+
+.usages-dynamic {
+  overflow: hidden;
+}
+
+.usages_title {
+  font-weight: bold;
+  margin-bottom: 0;
+  @include clearfix();
+}
+
+.usages_subtitle {
+  @extend .h6;
+}

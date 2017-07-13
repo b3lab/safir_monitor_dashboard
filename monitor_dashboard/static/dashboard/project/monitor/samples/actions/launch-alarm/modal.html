@@ -1,0 +1,133 @@
+<div class="modal-header">
+    <h3 class="modal-title">
+        <span translate>Launch Alarm</span>
+    </h3>
+</div>
+<div class="modal-body">
+    <p translate>Launch an alarm to receive notifications when the specified threshold of the given resource is
+        reached.</p>
+    <div ng-form="form">
+        <div class="row">
+            <div class="col-xs-12 col-sm-8 col-md-6">
+                <div class="form-group required"
+                     ng-class="{ 'has-error': form.email.$invalid && form.email.$dirty }">
+                    <label translate class="control-label" for="email">
+                        Notification e-mail address
+                        <span class="hz-icon-required fa fa-asterisk"></span>
+                    </label>
+                    <input name="email" id="email" type="email" class="form-control"
+                           ng-model="modal.email" ng-required="true">
+                    <span class="help-block" ng-show="form.email.$invalid && form.email.$dirty">
+                           {$ ::modal.emailError $}
+                    </span>
+                </div>
+            </div>
+            <div class="col-xs-12 col-sm-8 col-md-6">
+                <div class="form-group required">
+                    <label translate class="control-label" for="resource-type">
+                        Resource type
+                        <span class="hz-icon-required fa fa-asterisk"></span>
+                    </label>
+                    <select class="form-control" name="resource-type" id="resource-type"
+                            ng-options="item.value for item in modal.resourceTypes"
+                            ng-model="modal.selectedResourceType" ng-required="true">
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+        </div>
+        <div class="row">
+            <div ng-if="modal.selectedResourceType.key === 'cpu' ||
+                        modal.selectedResourceType.key === 'ram' ||
+                        modal.selectedResourceType.key === 'disk'">
+                <div class="col-xs-12 col-sm-8 col-md-6">
+                    <div class="form-group required"
+                         ng-class="{ 'has-error': form.threshold.$invalid && form.threshold.$dirty }">
+                        <label translate class="control-label" for="threshold">
+                            Threshold
+                            <span class="hz-icon-required fa fa-asterisk"></span>
+                        </label>
+                        <input name="threshold" id="threshold" type="number" class="form-control"
+                               ng-model="modal.threshold" ng-pattern="/^\d+$/" min="0" max="100"
+                               ng-required="true">
+          <span class="help-block" ng-show="form.threshold.$invalid && form.threshold.$dirty">
+            {$ ::modal.thresholdError $}
+          </span>
+                    </div>
+                </div>
+            </div>
+            <div ng-if="modal.selectedResourceType.key === 'incoming_network' ||
+                        modal.selectedResourceType.key === 'outgoing_network'">
+                <div class="col-xs-12 col-sm-8 col-md-6">
+                    <div class="form-group required"
+                         ng-class="{ 'has-error': form.networkThreshold.$invalid && form.networkThreshold.$dirty }">
+                        <label translate class="control-label" for="networkThreshold">
+                            Threshold
+                            <span class="hz-icon-required fa fa-asterisk"></span>
+                        </label>
+                        <input name="networkThreshold" id="networkThreshold" type="number" class="form-control"
+                               ng-model="modal.networkThreshold" ng-pattern="/^\d+$/" min="0" max="1000"
+                               ng-required="true">
+          <span class="help-block" ng-show="form.networkThreshold.$invalid && form.networkThreshold.$dirty">
+            {$ ::modal.networkThresholdError $}
+          </span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12 col-sm-8 col-md-6">
+                <div class="form-group required">
+                    <label translate class="control-label" for="comparison-operator">
+                        Comparison Operator
+                        <span class="hz-icon-required fa fa-asterisk"></span>
+                    </label>
+                    <select class="form-control" name="comparison-operator" id="comparison-operator"
+                            ng-options="item.value for item in modal.comparisonOptions"
+                            ng-model="modal.selectedComparison" ng-required="true">
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12 col-sm-8 col-md-6">
+                <div class="form-group required"
+                         ng-class="{ 'has-error': form.period.$invalid && form.period.$dirty }">
+                    <label translate class="control-label" for="period">
+                        Period (sec)
+                        <span class="hz-icon-required fa fa-asterisk"></span>
+                    </label>
+                    <input name="period" id="period" type="number" class="form-control"
+                           ng-model="modal.period" ng-pattern="/^\d+$/" min="600"
+                           ng-required="true">
+          <span class="help-block" ng-show="form.period.$invalid && form.period.$dirty">
+            {$ ::modal.periodError $}
+          </span>
+                </div>
+            </div>
+            <div class="col-xs-12 col-sm-8 col-md-6">
+                <div class="form-group required"
+                         ng-class="{ 'has-error': form.period.$invalid && form.period.$dirty }">
+                    <label translate class="control-label" for="evaluationPeriods">
+                        Evaluation Periods
+                        <span class="hz-icon-required fa fa-asterisk"></span>
+                    </label>
+                    <input name="evaluationPeriods" id="evaluationPeriods" type="number" class="form-control"
+                           ng-model="modal.evaluationPeriods" ng-pattern="/^\d+$/" min="1"
+                           ng-required="true">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    <button class="btn btn-sm btn-default" ng-click="modal.cancel()">
+        <span class="fa fa-close"></span>
+        <span translate>Cancel</span>
+    </button>
+    <button class="btn btn-sm btn-primary"
+            ng-click="modal.save()"
+            ng-disabled="form.$invalid || modal.saving">
+        <span class="fa" ng-class="modal.saving ? 'fa-spinner fa-spin' : 'fa-check'"></span>
+        <span translate>Launch</span>
+    </button>
+</div>
