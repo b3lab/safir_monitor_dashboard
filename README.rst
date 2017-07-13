@@ -25,10 +25,7 @@ Installation Guide
   
 2. How To Use With Existing Openstack Installation
 --------------------------------------------------
-  
-Note:
------
-  
+
 At least the following Openstack services are needed to use Safir Monitor Dashboard; Keystone, Nova, Glance, Neutron,
 Ceilometer, Aodh and Horizon.  
   
@@ -82,6 +79,7 @@ Ceilometer, Aodh and Horizon.
   
 * Configure Ceilometer service to collect utilization data as shown in the 
   {SAFIR_MONITOR_DASHBOARD_DIR}/pipeline.yaml.controller_example file  
+
   
 * Install SNMP server to compute nodes to monitor them.  
 
