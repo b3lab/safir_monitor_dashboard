@@ -3,7 +3,7 @@ Safir Monitor Dashboard
   
 Description
 -----------
-Safir Monitor Dashboard is an OpenstackHhorizon plugin developed to visualize the collected utilization data
+Safir Monitor Dashboard is an Openstack Horizon plugin developed to visualize the collected utilization data
 of the physical and virtual machines in the clouds. Safir Monitor Dashboard currently visualizes  CPU, RAM, disc,
 incoming network and outgoing network utilization. Openstack Telemetry Service (Ceilometer) is used to collect the
 data from the cloud.  
@@ -13,8 +13,7 @@ Installation Guide
   
 1. How To Use With Devstack
 ---------------------------
-  
-::  
+
 .. sourcecode:: console  
   
     $ sudo apt-get install -y git  
@@ -49,7 +48,8 @@ Ceilometer, Aodh and Horizon.
   
 * Set the following configuration settings in {HORIZON_DIR}/openstack_dashboard/local/local_settings.py  
   
-.. sourcecode:: cfg  
+.. sourcecode:: cfg
+
     AODH_ALARM_ACTIONS=['<ALARM-SERVICE-URL>']  
     AODH_OK_ACTIONS=['<ALARM-SERVICE-URL>']  
   
@@ -65,14 +65,16 @@ Ceilometer, Aodh and Horizon.
   
 * Collect Safir Monitor Dashboard static files on Horizon and restart Apache2 server  
   
-.. sourcecode:: console  
+.. sourcecode:: console
+
     $ python {HORIZON_DIR}/manage.py collectstatic  
     $ python {HORIZON_DIR}/manage.py compress  # if compress enabled  
     $ sudo service apache2 restart  
   
 * Configure Nova service to monitor compute instances like the following example and restart the service  
   
-.. sourcecode:: cfg  
+.. sourcecode:: cfg
+
     notify_on_state_change = vm_and_task_state  
     instance_usage_audit_period = hour  
     instance_usage_audit = True  
