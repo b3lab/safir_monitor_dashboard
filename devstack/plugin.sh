@@ -3,10 +3,12 @@ function monitor_dashboard_install {
 }
 
 function monitor_dashboard_configure {
-    cp -t  $HORIZON_DIR/openstack_dashboard/local/enabled/ \
-        $MONITOR_DASHBOARD_ENABLE_FILE_USER_PROJECT_MONITOR \
-        $MONITOR_DASHBOARD_ENABLE_FILE_ADMIN_HYPERVISOR_MONITOR \
-        $MONITOR_DASHBOARD_ENABLE_FILE_ADMIN_PROJECT_MONITOR \
+    cp $MONITOR_DASHBOARD_ENABLE_FILE_USER_PROJECT_MONITOR \
+        $HORIZON_DIR/openstack_dashboard/local/enabled/
+    cp $MONITOR_DASHBOARD_ENABLE_FILE_ADMIN_HYPERVISOR_MONITOR \
+        $HORIZON_DIR/openstack_dashboard/local/enabled/
+    cp $MONITOR_DASHBOARD_ENABLE_FILE_ADMIN_PROJECT_MONITOR \
+        $HORIZON_DIR/openstack_dashboard/local/enabled/
 }
 
 if is_service_enabled horizon; then
@@ -36,5 +38,5 @@ if [[ "$1" == "clean" ]]; then
     rm -f ${MONITOR_DASHBOARD_ENABLE_FILE_USER_PROJECT_MONITOR}*
     rm -f ${MONITOR_DASHBOARD_ENABLE_FILE_ADMIN_HYPERVISOR_MONITOR}*
     rm -f ${MONITOR_DASHBOARD_ENABLE_FILE_ADMIN_PROJECT_MONITOR}*
-
 fi
+

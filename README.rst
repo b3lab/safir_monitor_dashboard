@@ -1,30 +1,33 @@
 Safir Monitor Dashboard
 =======================
-  
-Description
------------
+
 Safir Monitor Dashboard is an Openstack Horizon plugin developed to visualize the collected utilization data
 of the physical and virtual machines in the clouds. Safir Monitor Dashboard currently visualizes  CPU, RAM, disc,
 incoming network and outgoing network utilization. Openstack Telemetry Service (Ceilometer) is used to collect the
 data from the cloud.  
+
+Installation
+============
   
-Installation Guide
-------------------
-  
-1. How To Use With Devstack
----------------------------
+How To Use With Devstack
+------------------------
 
 .. sourcecode:: console  
+
+    $ git clone http://github.com/openstack-dev/devstack -b stable/ocata
+    $ cd devstack
+    $ wget -O local.conf https://github.com/b3lab/safir_monitor_dashboard/blob/master/local.conf?raw=true
+
+Configure local.conf with host IP and set an admin password
+
+.. sourcecode:: console
+
+    $ ./stack.sh
+
+Then follow the Configuration steps
   
-    $ sudo apt-get install -y git  
-    $ git clone http://github.com/openstack-dev/devstack  
-    $ cd devstack  
-    $ git checkout stable/ocata  
-    $ wget -O local.conf https://github.com/b3lab/safir_monitor_dashboard/blob/master/local.conf?raw=true  
-    $ ./stack.sh  
-  
-2. How To Use With Existing Openstack Installation
---------------------------------------------------
+How To Use With Existing Openstack Installation
+-----------------------------------------------
 
 At least the following Openstack services are needed to use Safir Monitor Dashboard; Keystone, Nova, Glance, Neutron,
 Ceilometer, Aodh and Horizon.  
@@ -35,23 +38,28 @@ Ceilometer, Aodh and Horizon.
   
     $ git clone https://github.com/b3lab/safir_monitor_dashboard.git  
     $ cd safir_monitor_dashboard  
-    $ pip install .  
+    $ sudo pip install .
   
 * Copy Safir Monitor Dashboard enabled files to Horizon's local enabled files directory  
   
 .. sourcecode:: console  
   
-    $ cp monitor_dashboard/enabled/_*  {HORIZON_DIR}/openstack_dashboard/local/enabled/  
-  
+    $ cp monitor_dashboard/enabled/_*  {HORIZON_DIR}/openstack_dashboard/local/enabled/
+
+Then follow the Configuration steps
+
+Configuration
+=============
+
 * Set the following configuration settings in {HORIZON_DIR}/openstack_dashboard/local/local_settings.py  
   
 .. sourcecode:: cfg
 
-    AODH_ALARM_ACTIONS=['<ALARM-SERVICE-URL>']  
-    AODH_OK_ACTIONS=['<ALARM-SERVICE-URL>']  
+    AODH_ALARM_ACTIONS = ['<ALARM-SERVICE-URL>']
+    AODH_OK_ACTIONS = ['<ALARM-SERVICE-URL>']
   
-    PROVIDER_NETWORK_INTERFACE="<network-interface>"  
-    MONITOR_DISK_DEVICE="<disk-device>"  
+    PROVIDER_NETWORK_INTERFACE = "<network-interface>"
+    MONITOR_DISK_DEVICE = "<disk-device>"
   
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  
     EMAIL_HOST =  
