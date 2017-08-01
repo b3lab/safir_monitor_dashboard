@@ -54,6 +54,7 @@
 
         function allowed(instance) {
             return $q.all([
+                // TODO(ecelik): Add policy check
                 qExtensions.booleanAsPromise(true)
             ]);
         }

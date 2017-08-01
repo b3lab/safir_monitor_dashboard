@@ -1,7 +1,7 @@
 =================================
 Monitor dashboard devstack plugin
 =================================
-  
+
 This directory contains the monitor-dashboard devstack plugin.
 
 To enable the plugin, add the following to your local.conf:

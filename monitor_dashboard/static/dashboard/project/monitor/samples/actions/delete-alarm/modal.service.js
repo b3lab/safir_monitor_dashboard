@@ -21,7 +21,7 @@
 
     deleteAlarmService.$inject = [
         '$q',
-        '$modal',
+        '$uibModal',
         'horizon.dashboard.project.monitor.basePath',
         'horizon.app.core.openstack-service-api.monitor',
         'horizon.framework.widgets.toast.service',
@@ -37,7 +37,7 @@
      * Provides the service to delete an alarm.
      *
      * @param $q The angular service for promises.
-     * @param $modal The angular bootstrap $modal service.
+     * @param $uibModal The angular bootstrap $uibModal service.
      * @param basePath The Monitor module base path.
      * @param api The horizon monitor api service.
      * @param toastService The horizon toast service.
@@ -47,7 +47,7 @@
      * @returns The Delete Alarm modal service.
      */
     function deleteAlarmService($q,
-                                $modal,
+                                $uibModal,
                                 basePath,
                                 api,
                                 toastService,
@@ -65,7 +65,8 @@
 
         function allowed(instance) {
             return $q.all([
-                qExtensions.booleanAsPromise(true)  // ?
+                // TODO(ecelik): Add policy check
+                qExtensions.booleanAsPromise(true)
             ]);
         }
 
@@ -80,7 +81,7 @@
                     }
                 }
             };
-            $modal.open(spec).result.then(onModalClose);
+            $uibModal.open(spec).result.then(onModalClose);
         }
 
         function onModalClose() {

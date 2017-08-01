@@ -20,7 +20,7 @@
         .controller('DeleteAlarmModalController', DeleteAlarmModalController);
 
     DeleteAlarmModalController.$inject = [
-        '$modalInstance',
+        '$uibModalInstance',
         'horizon.app.core.openstack-service-api.monitor',
         'horizon.framework.util.i18n.gettext',
         // Dependencies injected with resolve by $modal.open
@@ -41,7 +41,7 @@
      * @returns The Delete Alarm modal controller.
      */
 
-    function DeleteAlarmModalController($modalInstance, api, gettext, alarms) {
+    function DeleteAlarmModalController($uibModalInstance, api, gettext, alarms) {
         var ctrl = this;
 
         ctrl.cancel = cancel;
@@ -60,11 +60,11 @@
         }
 
         function cancel() {
-            $modalInstance.dismiss('cancel');
+            $uibModalInstance.dismiss('cancel');
         }
 
         function onSuccess() {
-            $modalInstance.close();
+            $uibModalInstance.close();
         }
 
         function onFailure() {

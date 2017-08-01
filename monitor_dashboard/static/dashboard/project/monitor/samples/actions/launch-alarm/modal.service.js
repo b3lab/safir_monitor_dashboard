@@ -21,7 +21,7 @@
 
     launchAlarmService.$inject = [
         '$q',
-        '$modal',
+        '$uibModal',
         'horizon.dashboard.project.monitor.basePath',
         'horizon.framework.widgets.toast.service',
         'horizon.framework.util.i18n.gettext',
@@ -36,7 +36,7 @@
      * Provides the service to launch an alarm.
      *
      * @param $q The angular service for promises.
-     * @param $modal The angular bootstrap $modal service.
+     * @param $uibModal The angular bootstrap $uibModal service.
      * @param basePath The Monitor module base path.
      * @param toastService The horizon toast service.
      * @param gettext The horizon gettext function for translation.
@@ -45,7 +45,7 @@
      * @returns The Launch Alarm modal service.
      */
     function launchAlarmService($q,
-                                $modal,
+                                $uibModal,
                                 basePath,
                                 toastService,
                                 gettext,
@@ -62,7 +62,8 @@
 
         function allowed(instance) {
             return $q.all([
-                qExtensions.booleanAsPromise(true)  // ?
+                // TODO(ecelik): Add policy check
+                qExtensions.booleanAsPromise(true)
             ]);
         }
 
@@ -77,7 +78,7 @@
                     }
                 }
             };
-            $modal.open(spec).result.then(onModalClose);
+            $uibModal.open(spec).result.then(onModalClose);
         }
 
         function onModalClose() {

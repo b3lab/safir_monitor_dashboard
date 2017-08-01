@@ -20,7 +20,7 @@
         .controller('LaunchAlarmModalController', LaunchAlarmModalController);
 
     LaunchAlarmModalController.$inject = [
-        '$modalInstance',
+        '$uibModalInstance',
         'horizon.app.core.openstack-service-api.monitor',
         'horizon.framework.util.i18n.gettext',
         // Dependencies injected with resolve by $modal.open
@@ -41,7 +41,7 @@
      * @returns The Launch Alarm modal controller.
      */
 
-    function LaunchAlarmModalController($modalInstance, api, gettext, instance_id) {
+    function LaunchAlarmModalController($uibModalInstance, api, gettext, instance_id) {
         var ctrl = this;
 
         ctrl.cancel = cancel;
@@ -86,11 +86,11 @@
         }
 
         function cancel() {
-            $modalInstance.dismiss('cancel');
+            $uibModalInstance.dismiss('cancel');
         }
 
         function onSuccess() {
-            $modalInstance.close();
+            $uibModalInstance.close();
         }
 
         function onFailure() {
