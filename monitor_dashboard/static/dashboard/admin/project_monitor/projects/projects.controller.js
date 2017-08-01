@@ -74,16 +74,23 @@
             ctrl.projectList = [];
             for (var i = 0; i < response.data.items.length; i++) {
                 if (response.data.items[i].enabled == true) {
+                    var current_project = {
+                            'id': response.data.items[i].id,
+                            'name': response.data.items[i].name,
+                            'instances': []
+                        };
                     ctrl.projectList.push({
-                        'id': response.data.items[i].id,
-                        'name': response.data.items[i].name,
-                        'instances': []
-                    })
+                            'id': response.data.items[i].id,
+                            'name': response.data.items[i].name
+                        });
                     ctrl.projectCache.push({
                         'id': response.data.items[i].id,
                         'name': response.data.items[i].name,
                         'instances': []
-                    })
+                    });
+                    if (response.data.items[i].name == 'admin') {
+                        ctrl.selectedProjects.push(current_project);
+                    }
                 }
             }
         }
@@ -133,11 +140,12 @@
             var to_date = new Date().toISOString();
 
             for (var i = 0; i < response.items.length; i++) {
-                ctrl.instanceList.push(response.items[i]);
                 var idx = getProjectIdx(response.items[i].tenant_id);
                 if (idx >= 0) {
+                    response.items[i].tenant_name = ctrl.projectCache[idx].name;
                     ctrl.projectCache[idx].instances.push(response.items[i]);
                 }
+                ctrl.instanceList.push(response.items[i]);
 
                 api.getInstanceCPUUtilization(from_date, to_date, limit, response.items[i].id).success(fillCpuUtilization);
                 api.getInstanceRamUtilization(from_date, to_date, limit, response.items[i].id).success(fillMemoryUtilization);

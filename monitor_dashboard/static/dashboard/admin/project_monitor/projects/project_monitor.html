@@ -2,12 +2,14 @@
 
 <div ng-controller="ProjectMonitorController as ctrl">
     <h3> Monitor Projects</h3>
-    <multiselect style="width: 100%;margin-bottom: 20px" class="input-xlarge" multiple="true"
+    <multiselect style="width: 100%;margin-bottom: 20px" class="input-xlarge"
+                 show-select-all="false"
+                 show-unselect-all="false"
                  ng-model="ctrl.selectedProjects"
-                 options="p.name for p in ctrl.projectList"
-                 change="selectProjects()"
-                 data-multiple="true"
-                 checkbox="true">
+                 ng-change="selectProjects()"
+                 options="ctrl.projectList"
+                 id-prop="name"
+                 display-prop="name">
     </multiselect>
     <div ng-if="ctrl.selectedProjects.length">
         <div align="center" style="margin-top: 15px">
@@ -90,6 +92,7 @@
 
                 <th class="expander"></th>
 
+                <th class="rsp-p1" st-sort="tenant_name" translate>Project</th>
                 <th class="rsp-p1" st-sort="name" st-sort-default="name" translate>Name</th>
                 <th class="rsp-p1" st-sort="state" translate>Status</th>
                 <th class="rsp-p1" st-sort="usage" translate>CPU Usage</th>
@@ -122,6 +125,7 @@
               duration="200">
         </span>
                 </td>
+                <td class="rsp-p1">{$ ::item.tenant_name $}</td>
                 <td class="rsp-p1">{$ ::item.name $}</td>
                 <td class="rsp-p1">{$ ::item.status $}</td>
                 <td class="rsp-p1">

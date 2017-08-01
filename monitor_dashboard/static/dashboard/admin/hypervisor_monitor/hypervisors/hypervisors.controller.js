@@ -77,7 +77,7 @@
             var from_date = getYesterday().toISOString();
             var to_date = new Date().toISOString();
             // sample count for one host per day if collected every ten minutes = 144
-            ctrl.hostLimit = ctrl.hostList.length * 144
+            ctrl.hostLimit = ctrl.hostList.length * 144;
             for (var i = 0; i < ctrl.hostList.length; i++) {
                 var hostname = ctrl.hostList[i].hypervisor_hostname;
                 api.getHostCPUUtilization(from_date, to_date, ctrl.hostLimit, hostname).success(fillHostCpuUtilization);
@@ -157,13 +157,15 @@
                 }).indexOf(id);
                 if (idx >= 0) {
                     var hostname = ctrl.hostList[idx].hypervisor_hostname;
+                    var color = ctrl.hostList[idx].color;
 
                     ctrl.hostList[idx][host_data] = utils[hostname];
 
                     if (utils[hostname].length > 1) {
                         ctrl[total_data].push({
                             values: utils[hostname],
-                            key: hostname
+                            key: hostname,
+                            color: color
                         });
                     }
                 }

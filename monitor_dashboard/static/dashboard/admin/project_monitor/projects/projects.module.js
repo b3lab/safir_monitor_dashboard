@@ -25,7 +25,7 @@
    */
 
   angular
-    .module('horizon.dashboard.admin.project_monitor.projects', ['nvd3','ui.multiselect']);
+    .module('horizon.dashboard.admin.project_monitor.projects', ['nvd3','btorfs.multiselect']);
 
 })();
 

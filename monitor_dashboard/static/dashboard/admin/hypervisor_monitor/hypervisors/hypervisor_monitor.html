@@ -76,6 +76,7 @@
             <th class="rsp-p1" st-sort="state" translate>State</th>
             <th class="rsp-p1" st-sort="status" translate>Status</th>
             <th class="rsp-p1" st-sort="running_vms" translate>Running VMs</th>
+            <th class="rsp-p1" st-sort="color" translate>Color</th>
         </tr>
         </thead>
 
@@ -109,6 +110,9 @@
             <td class="rsp-p1">{$ ::item.state $}</td>
             <td class="rsp-p1">{$ ::item.status $}</td>
             <td class="rsp-p1">{$ ::item.running_vms $}</td>
+            <td class="rsp-p1">
+                <span class="label label-info" style="background: {$ item.color $};">&nbsp&nbsp&nbsp</span>
+            </td>
             <td class="actions_column">
                 <!--
                 Table-row-action-column:

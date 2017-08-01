@@ -20,6 +20,36 @@ from openstack_dashboard.api import nova
 from openstack_dashboard.api.rest import urls
 from openstack_dashboard.api.rest import utils as rest_utils
 
+import uuid
+
+
+def hashCode(str):
+    """ Generate integer hash from the given string
+
+    :param str: Input string
+    :return: Integer hash
+    """
+    hash = 0
+    i = 0
+    while i < len(str):
+        hash = ord(str[i]) + ((hash << 5) - hash)
+        i += 1
+    return hash
+
+
+def intToRGB(i):
+    """ Convert integer value to RGB color
+
+    :param i: Input integer value
+    :return: RGB Color
+    """
+    c = str(i & 0xFFFFFF).upper()
+    if len(c) < 6:
+        c = "00000"[0: 6 - len(c)] + c
+    else:
+        c = c[0: 6]
+    return '#' + c
+
 
 @urls.register
 class InstanceMonitor(generic.View):
@@ -52,6 +82,7 @@ class InstanceMonitor(generic.View):
         for s in servers:
             server = s.to_dict()
 
+            server['tenant_name'] = ""
             server['instanceUsageState'] = ""
             server['cpuUsage'] = []
             server['ramUsage'] = []
@@ -59,7 +90,7 @@ class InstanceMonitor(generic.View):
             server['incomingNetworkUsage'] = []
             server['outgoingNetworkUsage'] = []
             server['selected'] = True
-            server['color'] = self.intToRGB(self.hashCode(server['id']))
+            server['color'] = intToRGB(hashCode(server['id']))
             server['host'] = server['OS-EXT-SRV-ATTR:host']
             server['zone'] = server['OS-EXT-AZ:availability_zone']
             server['full_flavor'] = nova.flavor_get(
@@ -118,5 +149,9 @@ class ListHosts(generic.View):
             hypervisor['incomingNetworkUsage'] = []
             hypervisor['outgoingNetworkUsage'] = []
             hypervisor['selected'] = True
+            # TODO(ecelik): Hosts do not have a uuid so I used
+            # python uuid method to generate one,
+            # this can be removed if we get hosts' uuid
+            hypervisor['color'] = intToRGB(hashCode(str(uuid.uuid4())))
             items.append(hypervisor)
         return {'items': items}
