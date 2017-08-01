@@ -33,7 +33,7 @@
      * @description
      * Controller used by the modal service for launching an alarm.
      *
-     * @param $modalInstance The angular bootstrap $modalInstance service.
+     * @param $uibModalInstance The angular bootstrap $uibModalInstance service.
      * @param api The horizon monitor API service.
      * @param gettext The horizon gettext function for translation.
      * @param instance_id The instance id.

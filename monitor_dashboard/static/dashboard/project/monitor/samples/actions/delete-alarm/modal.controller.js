@@ -33,7 +33,7 @@
      * @description
      * Controller used by the modal service for deleteing an alarm.
      *
-     * @param $modalInstance The angular bootstrap $modalInstance service.
+     * @param $uibModalInstance The angular bootstrap $uibModalInstance service.
      * @param api The horizon monitor API service.
      * @param gettext The horizon gettext function for translation.
      * @param alarms Defined alarms.
@@ -41,7 +41,7 @@
      * @returns The Delete Alarm modal controller.
      */
 
-    function DeleteAlarmModalController($uibModalInstance, api, gettext, alarms) {
+    function DeleteAlarmModalController($uibModalInstance, api, alarms) {
         var ctrl = this;
 
         ctrl.cancel = cancel;
