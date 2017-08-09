@@ -22,8 +22,6 @@
     DeleteAlarmModalController.$inject = [
         '$uibModalInstance',
         'horizon.app.core.openstack-service-api.monitor',
-        'horizon.framework.util.i18n.gettext',
-        // Dependencies injected with resolve by $modal.open
         'alarms'
     ];
 
@@ -35,7 +33,6 @@
      *
      * @param $uibModalInstance The angular bootstrap $uibModalInstance service.
      * @param api The horizon monitor API service.
-     * @param gettext The horizon gettext function for translation.
      * @param alarms Defined alarms.
      *
      * @returns The Delete Alarm modal controller.
@@ -48,7 +45,7 @@
         ctrl.save = save;
         ctrl.saving = false;
 
-        ctrl.alarmlist = initAlarms(alarms);
+        ctrl.alarmlist = initAlarms();
         ctrl.selectedAlarm = ctrl.alarmlist.length === 1 ? ctrl.alarmlist[0] : null;
 
         function save() {
@@ -71,11 +68,11 @@
             ctrl.saving = false;
         }
 
-        function initAlarms(alarmlist) {
+        function initAlarms() {
             var alarm_list = [];
-            for (var key in alarmlist) {
-              if (alarmlist.hasOwnProperty(key)) {
-                  alarm_list.push({key: key, value: alarmlist[key]});
+            for (var key in alarms) {
+              if (alarms.hasOwnProperty(key)) {
+                  alarm_list.push({key: key, value: alarms[key]});
               }
             }
             return alarm_list;

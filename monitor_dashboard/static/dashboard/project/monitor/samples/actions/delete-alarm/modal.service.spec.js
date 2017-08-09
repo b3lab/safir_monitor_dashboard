@@ -41,8 +41,7 @@
           };
         }
       };
-      $provide.value('$uibModal', {});
-      $provide.value('$modal', modal);
+      $provide.value('$uibModal', modal);
     }));
     beforeEach(module('horizon.dashboard.project.monitor', function ($provide) {
             $provide.constant('horizon.dashboard.project.monitor.basePath', '/a/sample/path/');

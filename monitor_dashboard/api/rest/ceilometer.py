@@ -40,10 +40,10 @@ def make_hardware_query(from_date=None, to_date=None, resource_id=None):
                               op='gt',
                               value=d))
         except ValueError as e:
-            print 'ERROR: ' + e.message
+            print('ERROR: ' + e.message)
             from_date = None
         except AttributeError as e:
-            print 'ERROR: ' + e.message
+            print('ERROR: ' + e.message)
             from_date = None
 
     if to_date is not None and to_date != 'undefined':
@@ -53,10 +53,10 @@ def make_hardware_query(from_date=None, to_date=None, resource_id=None):
                               op='lt',
                               value=d))
         except ValueError as e:
-            print 'ERROR: ' + e.message
+            print('ERROR: ' + e.message)
             to_date = None
         except AttributeError as e:
-            print 'ERROR: ' + e.message
+            print('ERROR: ' + e.message)
             to_date = None
 
     if resource_id is not None and resource_id != 'undefined':
@@ -77,10 +77,10 @@ def make_query(from_date=None, to_date=None, resource_id=None):
                               op='gt',
                               value=d))
         except ValueError as e:
-            print 'ERROR: ' + e.message
+            print('ERROR: ' + e.message)
             from_date = None
         except AttributeError as e:
-            print 'ERROR: ' + e.message
+            print('ERROR: ' + e.message)
             from_date = None
 
     if to_date is not None and to_date != 'undefined':
@@ -90,10 +90,10 @@ def make_query(from_date=None, to_date=None, resource_id=None):
                               op='lt',
                               value=d))
         except ValueError as e:
-            print 'ERROR: ' + e.message
+            print('ERROR: ' + e.message)
             to_date = None
         except AttributeError as e:
-            print 'ERROR: ' + e.message
+            print('ERROR: ' + e.message)
             to_date = None
 
     if resource_id is not None and resource_id != 'undefined':
@@ -188,15 +188,19 @@ class CpuUtilization(generic.View):
         utils = {}
 
         for data in samples:
-            uuid = data['instance_id']
+            project_id = data['project_id']
+            instance_id = data['instance_id']
 
-            if uuid not in utils:
-                utils[uuid] = {}
-                utils[uuid]['data'] = []
+            if project_id not in utils:
+                utils[project_id] = {}
+
+            if instance_id not in utils[project_id]:
+                utils[project_id][instance_id] = {}
+                utils[project_id][instance_id]['data'] = []
 
             data['counter_volume'] = "{0:.2f}".format(
                 data['counter_volume'])
-            utils[uuid]['data'].append(data)
+            utils[project_id][instance_id]['data'].append(data)
 
         print("--- CpuUtilization %s seconds ---" % (time.time() - start_time))
         return {'items': utils}
@@ -266,15 +270,19 @@ class RamUtilization(generic.View):
         utils = {}
 
         for data in samples:
-            uuid = data['instance_id']
+            project_id = data['project_id']
+            instance_id = data['instance_id']
 
-            if uuid not in utils:
-                utils[uuid] = {}
-                utils[uuid]['data'] = []
+            if project_id not in utils:
+                utils[project_id] = {}
+
+            if instance_id not in utils[project_id]:
+                utils[project_id][instance_id] = {}
+                utils[project_id][instance_id]['data'] = []
 
             data['counter_volume'] = "{0:.2f}".format(
                 data['counter_volume'])
-            utils[uuid]['data'].append(data)
+            utils[project_id][instance_id]['data'].append(data)
 
         print("--- RamUtilization %s seconds ---" % (time.time() -
                                                      start_time))
@@ -345,15 +353,19 @@ class DiskUtilization(generic.View):
         utils = {}
 
         for data in samples:
-            uuid = data['instance_id']
+            project_id = data['project_id']
+            instance_id = data['instance_id']
 
-            if uuid not in utils:
-                utils[uuid] = {}
-                utils[uuid]['data'] = []
+            if project_id not in utils:
+                utils[project_id] = {}
+
+            if instance_id not in utils[project_id]:
+                utils[project_id][instance_id] = {}
+                utils[project_id][instance_id]['data'] = []
 
             data['counter_volume'] = "{0:.2f}".format(
                 data['counter_volume'])
-            utils[uuid]['data'].append(data)
+            utils[project_id][instance_id]['data'].append(data)
 
         print("--- DiskUtilization %s seconds ---"
               % (time.time() - start_time))
@@ -417,26 +429,34 @@ class NetworkUtilization(generic.View):
         outgoingutils = {}
 
         for data in incomingtraffic:
-            uuid = data['instance_id']
+            project_id = data['project_id']
+            instance_id = data['instance_id']
 
-            if uuid not in incomingutils:
-                incomingutils[uuid] = {}
-                incomingutils[uuid]['data'] = []
+            if project_id not in incomingutils:
+                incomingutils[project_id] = {}
+
+            if instance_id not in incomingutils[project_id]:
+                incomingutils[project_id][instance_id] = {}
+                incomingutils[project_id][instance_id]['data'] = []
 
             data['counter_volume'] = "{0:.2f}".format(
                 float(data['counter_volume']) * 8.0 * bps_to_mbps)
-            incomingutils[uuid]['data'].append(data)
+            incomingutils[project_id][instance_id]['data'].append(data)
 
         for data in outgoingtraffic:
-            uuid = data['instance_id']
+            project_id = data['project_id']
+            instance_id = data['instance_id']
 
-            if uuid not in outgoingutils:
-                outgoingutils[uuid] = {}
-                outgoingutils[uuid]['data'] = []
+            if project_id not in outgoingutils:
+                outgoingutils[project_id] = {}
+
+            if instance_id not in outgoingutils[project_id]:
+                outgoingutils[project_id][instance_id] = {}
+                outgoingutils[project_id][instance_id]['data'] = []
 
             data['counter_volume'] = "{0:.2f}".format(
                 float(data['counter_volume']) * 8.0 * bps_to_mbps)
-            outgoingutils[uuid]['data'].append(data)
+            outgoingutils[project_id][instance_id]['data'].append(data)
 
         print("--- NetworkUtilization %s seconds ---" % (time.time() -
                                                          start_time))

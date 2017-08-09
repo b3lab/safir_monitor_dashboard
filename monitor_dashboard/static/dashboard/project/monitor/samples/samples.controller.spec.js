@@ -45,78 +45,88 @@
                 'state': 'ok'
             }];
             var instanceCpuUsage = {
-                'instance-1': {
-                    'data': [{
-                        'counter_name': 'cpu.util',
-                        'counter_volume': '4.00',
-                        'timestamp': '2017-06-12T11:36:58.593000'
-                    },
-                        {
+                'project-1': {
+                    'instance-1': {
+                        'data': [{
                             'counter_name': 'cpu.util',
-                            'counter_volume': '5.00',
-                            'timestamp': '2017-06-12T11:36:48.593000'
-                        }
-                    ]
+                            'counter_volume': '4.00',
+                            'timestamp': '2017-06-12T11:36:58.593000'
+                        },
+                            {
+                                'counter_name': 'cpu.util',
+                                'counter_volume': '5.00',
+                                'timestamp': '2017-06-12T11:36:48.593000'
+                            }
+                        ]
+                    }
                 }
             };
             var instanceRamUsage = {
-                'instance-1': {
-                    'data': [{
-                        'counter_name': 'memory.util',
-                        'counter_volume': '80.00',
-                        'timestamp': '2017-06-12T11:36:58.593000'
-                    },
-                        {
+                'project-1': {
+                    'instance-1': {
+                        'data': [{
                             'counter_name': 'memory.util',
-                            'counter_volume': '75.00',
-                            'timestamp': '2017-06-12T11:36:48.593000'
-                        }
-                    ]
+                            'counter_volume': '80.00',
+                            'timestamp': '2017-06-12T11:36:58.593000'
+                        },
+                            {
+                                'counter_name': 'memory.util',
+                                'counter_volume': '75.00',
+                                'timestamp': '2017-06-12T11:36:48.593000'
+                            }
+                        ]
+                    }
                 }
             };
             var instanceDiskUsage = {
-                'instance-1': {
-                    'data': [{
-                        'counter_name': 'disk.util',
-                        'counter_volume': '20.00',
-                        'timestamp': '2017-06-12T11:36:58.593000'
-                    },
-                        {
+                'project-1': {
+                    'instance-1': {
+                        'data': [{
                             'counter_name': 'disk.util',
-                            'counter_volume': '25.00',
-                            'timestamp': '2017-06-12T11:36:48.593000'
-                        }
-                    ]
+                            'counter_volume': '20.00',
+                            'timestamp': '2017-06-12T11:36:58.593000'
+                        },
+                            {
+                                'counter_name': 'disk.util',
+                                'counter_volume': '25.00',
+                                'timestamp': '2017-06-12T11:36:48.593000'
+                            }
+                        ]
+                    }
                 }
             };
             var instanceIncomingNetworkUsage = {
-                'instance-1': {
-                    'data': [{
-                        'counter_name': 'network.incoming.bytes.rate',
-                        'counter_volume': '30.00',
-                        'timestamp': '2017-06-12T11:36:58.593000'
-                    },
-                        {
+                'project-1': {
+                    'instance-1': {
+                        'data': [{
                             'counter_name': 'network.incoming.bytes.rate',
-                            'counter_volume': '40.00',
-                            'timestamp': '2017-06-12T11:36:48.593000'
-                        }
-                    ]
+                            'counter_volume': '30.00',
+                            'timestamp': '2017-06-12T11:36:58.593000'
+                        },
+                            {
+                                'counter_name': 'network.incoming.bytes.rate',
+                                'counter_volume': '40.00',
+                                'timestamp': '2017-06-12T11:36:48.593000'
+                            }
+                        ]
+                    }
                 }
             };
             var instanceOutcomingNetworkUsage = {
-                'instance-1': {
-                    'data': [{
-                        'counter_name': 'network.outcoming.bytes.rate',
-                        'counter_volume': '50.00',
-                        'timestamp': '2017-06-12T11:36:58.593000'
-                    },
-                        {
+                'project-1': {
+                    'instance-1': {
+                        'data': [{
                             'counter_name': 'network.outcoming.bytes.rate',
-                            'counter_volume': '60.00',
-                            'timestamp': '2017-06-12T11:36:48.593000'
-                        }
-                    ]
+                            'counter_volume': '50.00',
+                            'timestamp': '2017-06-12T11:36:58.593000'
+                        },
+                            {
+                                'counter_name': 'network.outcoming.bytes.rate',
+                                'counter_volume': '60.00',
+                                'timestamp': '2017-06-12T11:36:48.593000'
+                            }
+                        ]
+                    }
                 }
             };
 
@@ -240,29 +250,29 @@
                 from_date = getYesterday().toISOString();
                 to_date = new Date().toISOString()
                 expect(monitorAPI.getInstanceCPUUtilization).toHaveBeenCalledWith(from_date, to_date, 144);
-                expect(ctrl.totalCpuData[0].values[0].y).toEqual(instanceCpuUsage['instance-1'].data[0].counter_volume);
+                expect(ctrl.totalCpuData[0].values[0].y).toEqual(instanceCpuUsage['project-1']['instance-1'].data[0].counter_volume);
             });
             it('should retrieve RAM usage datum properly', function () {
                 var ctrl = createController();
                 from_date = getYesterday().toISOString();
                 to_date = new Date().toISOString();
                 expect(monitorAPI.getInstanceRamUtilization).toHaveBeenCalledWith(from_date, to_date, 144);
-                expect(ctrl.totalRamData[0].values[0].y).toEqual(instanceRamUsage['instance-1'].data[0].counter_volume);
+                expect(ctrl.totalRamData[0].values[0].y).toEqual(instanceRamUsage['project-1']['instance-1'].data[0].counter_volume);
             });
             it('should retrieve Network usage datum properly', function () {
                 var ctrl = createController();
                 from_date = getYesterday().toISOString();
                 to_date = new Date().toISOString()
                 expect(monitorAPI.getInstanceNetworkUtilization).toHaveBeenCalledWith(from_date, to_date, 144);
-                expect(ctrl.totalIncomingNetworkData[0].values[0].y).toEqual(instanceIncomingNetworkUsage['instance-1'].data[0].counter_volume);
-                expect(ctrl.totalOutgoingNetworkData[0].values[0].y).toEqual(instanceOutcomingNetworkUsage['instance-1'].data[0].counter_volume);
+                expect(ctrl.totalIncomingNetworkData[0].values[0].y).toEqual(instanceIncomingNetworkUsage['project-1']['instance-1'].data[0].counter_volume);
+                expect(ctrl.totalOutgoingNetworkData[0].values[0].y).toEqual(instanceOutcomingNetworkUsage['project-1']['instance-1'].data[0].counter_volume);
             });
             it('should retrieve Disk usage datum properly', function () {
                 var ctrl = createController();
                 from_date = getYesterday().toISOString();
                 to_date = new Date().toISOString()
                 expect(monitorAPI.getInstanceDiskUtilization).toHaveBeenCalledWith(from_date, to_date, 144);
-                expect(ctrl.totalDiskData[0].values[0].y).toEqual(instanceDiskUsage['instance-1'].data[0].counter_volume);
+                expect(ctrl.totalDiskData[0].values[0].y).toEqual(instanceDiskUsage['project-1']['instance-1'].data[0].counter_volume);
             });
 
 

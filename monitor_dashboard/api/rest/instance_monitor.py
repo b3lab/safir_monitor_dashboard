@@ -82,52 +82,15 @@ class InstanceMonitor(generic.View):
         for s in servers:
             server = s.to_dict()
 
-            server['tenant_name'] = ""
-            server['instanceUsageState'] = ""
-            server['cpuUsage'] = []
-            server['ramUsage'] = []
-            server['diskUsage'] = []
-            server['incomingNetworkUsage'] = []
-            server['outgoingNetworkUsage'] = []
-            server['selected'] = True
             server['color'] = intToRGB(hashCode(server['id']))
             server['host'] = server['OS-EXT-SRV-ATTR:host']
             server['zone'] = server['OS-EXT-AZ:availability_zone']
             server['full_flavor'] = nova.flavor_get(
                 request, server['flavor']['id']).to_dict()
-            server['highestUsagePeriod'] = ""
 
             items.append(server)
 
         return {'items': items}
-
-    @staticmethod
-    def hashCode(str):
-        """ Generate integer hash from the given string
-
-        :param str: Input string
-        :return: Integer hash
-        """
-        hash = 0
-        i = 0
-        while i < len(str):
-            hash = ord(str[i]) + ((hash << 5) - hash)
-            i += 1
-        return hash
-
-    @staticmethod
-    def intToRGB(i):
-        """ Convert integer value to RGB color
-
-        :param i: Input integer value
-        :return: RGB Color
-        """
-        c = str(i & 0xFFFFFF).upper()
-        if len(c) < 6:
-            c = "00000"[0: 6 - len(c)] + c
-        else:
-            c = c[0: 6]
-        return '#' + c
 
 
 @urls.register
@@ -143,12 +106,6 @@ class ListHosts(generic.View):
         items = []
         for h in hypervisors:
             hypervisor = h.to_dict()
-            hypervisor['cpuUsage'] = []
-            hypervisor['ramUsage'] = []
-            hypervisor['diskUsage'] = []
-            hypervisor['incomingNetworkUsage'] = []
-            hypervisor['outgoingNetworkUsage'] = []
-            hypervisor['selected'] = True
             # TODO(ecelik): Hosts do not have a uuid so I used
             # python uuid method to generate one,
             # this can be removed if we get hosts' uuid

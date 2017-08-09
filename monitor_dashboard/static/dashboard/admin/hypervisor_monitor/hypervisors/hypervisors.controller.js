@@ -20,7 +20,6 @@
         .controller('HypervisorMonitorController', HypervisorMonitorController);
 
     HypervisorMonitorController.$inject = [
-        '$scope',
         'horizon.app.core.openstack-service-api.monitor',
         'horizon.dashboard.admin.hypervisor_monitor.hypervisors.actions.rowActions'
     ];
@@ -31,13 +30,12 @@
      *
      * @description
      * Controller for the HypervisorMonitor Samples
-     * @param $scope An Execution for HypervisorMonitorController AngularJs Expressions
      * @param api The Monitor service API.
      * @param rowActions The row actions service.
      * @returns undefined
 
      */
-    function HypervisorMonitorController($scope, api, rowActions) {
+    function HypervisorMonitorController(api, rowActions) {
 
         var ctrl = this;
         ctrl.rowActions = rowActions;
@@ -67,27 +65,50 @@
             ctrl.totalHostOutgoingNetworkData = [];
 
             api.getHosts().then(getHosts);
-
         }
 
         function getHosts(response) {
             console.time('getHosts');
-            ctrl.hostList = response.data.items;
+
+            for (var i = 0; i < response.data.items.length; i++) {
+                var host = {
+                    id: response.data.items[i].id,
+                    hypervisor_hostname: response.data.items[i].hypervisor_hostname,
+                    hypervisor_type: response.data.items[i].hypervisor_type,
+                    host_ip: response.data.items[i].host_ip,
+                    state: response.data.items[i].state,
+                    status: response.data.items[i].status,
+                    running_vms: response.data.items[i].running_vms,
+                    vcpus: response.data.items[i].vcpus,
+                    memory_mb: response.data.items[i].memory_mb,
+                    local_gb: response.data.items[i].local_gb,
+                    color: response.data.items[i].color,
+                    cpuUsage: [],
+                    ramUsage: [],
+                    diskUsage: [],
+                    incomingNetworkUsage: [],
+                    outgoingNetworkUsage: [],
+                    selected: true
+                };
+
+                ctrl.hostList.push(host);
+                getUtilizationData(host.hypervisor_hostname)
+            }
+            console.timeEnd('getHosts');
+        }
+
+        function getUtilizationData(hostname) {
 
             var from_date = getYesterday().toISOString();
             var to_date = new Date().toISOString();
             // sample count for one host per day if collected every ten minutes = 144
             ctrl.hostLimit = ctrl.hostList.length * 144;
-            for (var i = 0; i < ctrl.hostList.length; i++) {
-                var hostname = ctrl.hostList[i].hypervisor_hostname;
-                api.getHostCPUUtilization(from_date, to_date, ctrl.hostLimit, hostname).success(fillHostCpuUtilization);
-                api.getHostRAMUtilization(from_date, to_date, ctrl.hostLimit, hostname).success(fillHostRamUtilization);
-                api.getHostNetworkUtilization(from_date, to_date, ctrl.hostLimit, hostname).success(fillHostNetworkUtilization);
-                api.getHostDiskUtilization(from_date, to_date, ctrl.hostLimit, hostname).success(fillHostDiskUtilization);
-            }
-            console.timeEnd('getHosts');
-        }
 
+            api.getHostCPUUtilization(from_date, to_date, ctrl.hostLimit, hostname).success(fillHostCpuUtilization);
+            api.getHostRAMUtilization(from_date, to_date, ctrl.hostLimit, hostname).success(fillHostRamUtilization);
+            api.getHostNetworkUtilization(from_date, to_date, ctrl.hostLimit, hostname).success(fillHostNetworkUtilization);
+            api.getHostDiskUtilization(from_date, to_date, ctrl.hostLimit, hostname).success(fillHostDiskUtilization);
+        }
 
         function fillHostCpuUtilization(response) {
             console.time('fillHostCpuUtilization');
@@ -138,38 +159,35 @@
         }
 
         function addHostUtilization(data, host_data, total_data) {
-            var utils = [];
             for (var key in data) {
                 if (data.hasOwnProperty(key)) {
                     var hostname = key;
-                    utils[hostname] = [];
+                    var utils = [];
                     for (var i = 0; i < data[key].data.length; i++) {
                         var timestamp = new Date(data[key].data[i].timestamp);
-                        var volume = data[key].data[i].counter_volume;
-                        utils[hostname].push({x: timestamp, y: volume});
+                        var volume = parseFloat(data[key].data[i].counter_volume);
+                        utils.push({x: timestamp, y: volume});
+                    }
+
+                    var found = false;
+                    var j = 0;
+                    while (j < ctrl.hostList.length) {
+                        if (ctrl.hostList[j].hypervisor_hostname == hostname) {
+                            ctrl.hostList[j][host_data] = utils;
+                            found = true;
+
+                            if (utils.length > 1) {
+                                ctrl[total_data].push({
+                                    values: utils,
+                                    key: hostname,
+                                    color: ctrl.hostList[j].color
+                                });
+                            }
+                        }
+                        j += 1;
                     }
                 }
             }
-            // Find the host from host list and set usage data
-            Object.keys(utils).forEach(function (id) {
-                var idx = ctrl.hostList.map(function (x) {
-                    return x.hypervisor_hostname;
-                }).indexOf(id);
-                if (idx >= 0) {
-                    var hostname = ctrl.hostList[idx].hypervisor_hostname;
-                    var color = ctrl.hostList[idx].color;
-
-                    ctrl.hostList[idx][host_data] = utils[hostname];
-
-                    if (utils[hostname].length > 1) {
-                        ctrl[total_data].push({
-                            values: utils[hostname],
-                            key: hostname,
-                            color: color
-                        });
-                    }
-                }
-            });
         }
 
         ctrl.filterUtils = function () {
@@ -195,27 +213,32 @@
                     if (host.cpuUsage.length > 1)
                         ctrl.totalHostCpuData.push({
                             values: host.cpuUsage,
-                            key: host.hypervisor_hostname
+                            key: host.hypervisor_hostname,
+                            color: host.color
                         });
                     if (host.ramUsage.length > 1)
                         ctrl.totalHostRamData.push({
                             values: host.ramUsage,
-                            key: host.hypervisor_hostname
+                            key: host.hypervisor_hostname,
+                            color: host.color
                         });
                     if (host.diskUsage.length > 1)
                         ctrl.totalHostDiskData.push({
                             values: host.diskUsage,
-                            key: host.hypervisor_hostname
+                            key: host.hypervisor_hostname,
+                            color: host.color
                         });
                     if (host.incomingNetworkUsage.length > 1)
                         ctrl.totalHostIncomingNetworkData.push({
                             values: host.incomingNetworkUsage,
-                            key: host.hypervisor_hostname
+                            key: host.hypervisor_hostname,
+                            color: host.color
                         });
                     if (host.outgoingNetworkUsage.length > 1)
                         ctrl.totalHostOutgoingNetworkData.push({
                             values: host.outgoingNetworkUsage,
-                            key: host.hypervisor_hostname
+                            key: host.hypervisor_hostname,
+                            color: host.color
                         });
                 }
             }
@@ -272,12 +295,6 @@
                         "bottom": 60,
                         "left": 40
                     },
-                    callback: function (chart) {
-                        // alert(chart.container)
-                        // chart.container.setAttribute('width','0');
-                        $('rect.left').css('width');
-
-                    },
                     "duration": 100,
                     "useInteractiveGuideline": true,
                     x: function (d) {
@@ -286,332 +303,42 @@
                     y: function (d) {
                         return d.y;
                     },
-                    "dispatch": {
-                        stateChange: function (t, u) {
-                            console.log("stateChange");
-                        },
-                        changeState: function (e) {
-                            console.log("changeState");
-                        },
-                        tooltipShow: function (e) {
-                            console.log("tooltipShow");
-                        },
-                        tooltipHide: function (e) {
-                            console.log("tooltipHide");
-                        }
-                    },
                     "xAxis": {
-                        "axisLabel": null,
-                        "dispatch": {},
-                        "axisLabelDistance": 0,
-                        "staggerLabels": false,
-                        "rotateLabels": 0,
-                        "rotateYLabel": true,
                         "showMaxMin": false,
-                        "height": 60,
-                        "ticks": null,
-                        "width": 75,
-                        "margin": {
-                            "top": 0,
-                            "right": 0,
-                            "bottom": 0,
-                            "left": 0
-                        },
-                        "duration": 250,
-                        "orient": "bottom",
-                        "tickValues": null,
                         "tickFormat": function (d) {
                             return d3.time.format('%d %b %H:%M')(new Date(d));
-                        },
-                        "tickSubdivide": 0,
-                        "tickSize": 6,
-                        "tickPadding": 7,
-                        "domain": [
-                            0,
-                            1
-                        ],
-                        "range": [
-                            0,
-                            1
-                        ]
+                        }
                     },
                     "x2Axis": {
-                        "dispatch": {},
-                        "axisLabelDistance": 0,
-                        "staggerLabels": false,
-                        "rotateLabels": 0,
-                        "rotateYLabel": true,
                         "showMaxMin": false,
-                        "axisLabel": null,
-                        "height": 60,
-                        "ticks": null,
-                        "width": 75,
-                        "margin": {
-                            "top": 0,
-                            "right": 0,
-                            "bottom": 0,
-                            "left": 0
-                        },
-                        "duration": 100,
-                        "orient": "bottom",
-                        "tickValues": null,
                         "tickFormat": function (d) {
                             return null;
-                        },
-                        "tickSubdivide": 0,
-                        "tickSize": 6,
-                        "tickPadding": 5,
-                        "domain": [
-                            0,
-                            1
-                        ],
-                        "range": [
-                            0,
-                            1
-                        ]
+                        }
                     },
                     "yAxis": {
-                        "axisLabel": null,
-                        "rotateYLabel": false,
-                        "dispatch": {},
-                        "axisLabelDistance": 0,
-                        "staggerLabels": false,
-                        "rotateLabels": 0,
-                        "showMaxMin": true,
-                        "height": 60,
-                        "ticks": null,
-                        "width": 75,
-                        "margin": {
-                            "top": 0,
-                            "right": 0,
-                            "bottom": 0,
-                            "left": 0
-                        },
-                        "duration": 100,
-                        "orient": "left",
-                        "tickValues": null,
                         "tickFormat": function (d) {
                             return d3.format('.1')(d) + '%';
-                        },
-                        "tickSubdivide": 0,
-                        "tickSize": 6,
-                        "tickPadding": 3,
-                        "domain": [
-                            0,
-                            1
-                        ],
-                        "range": [
-                            0,
-                            1
-                        ]
-                    },
-                    "y2Axis": {
-                        "dispatch": {},
-                        "axisLabelDistance": 0,
-                        "staggerLabels": false,
-                        "rotateLabels": 0,
-                        "rotateYLabel": true,
-                        "showMaxMin": true,
-                        "axisLabel": null,
-                        "height": 100,
-                        "ticks": null,
-                        "width": 75,
-                        "margin": {
-                            "top": 0,
-                            "right": 0,
-                            "bottom": 0,
-                            "left": 0
-                        },
-                        "duration": 250,
-                        "orient": "right",
-                        "tickValues": null,
-                        "tickFormat": function (d) {
-                            return null;
-                        },
-                        "tickSubdivide": 0,
-                        "tickSize": 6,
-                        "tickPadding": 3,
-                        "domain": [
-                            0,
-                            1
-                        ],
-                        "range": [
-                            0,
-                            1
-                        ]
+                        }
                     },
                     "lines": {
-                        "dispatch": {},
-                        "width": 960,
-                        "height": 500,
-                        "xDomain": null,
-                        "yDomain": null,
-                        "pointDomain": [
-                            16,
-                            256
-                        ],
-                        "xRange": null,
-                        "yRange": null,
-                        "pointRange": null,
                         "forceX": [],
-                        "forceY": [0, 100],
-                        "forcePoint": [],
-                        "interactive": true,
-                        "padDataOuter": 0.1,
-                        "padData": false,
-                        "clipEdge": true,
-                        "clipVoronoi": true,
-                        "showVoronoi": false,
-                        "id": 49319,
-                        "interactiveUpdateDelay": 300,
-                        "showLabels": false,
-                        "margin": {
-                            "top": 0,
-                            "right": 0,
-                            "bottom": 0,
-                            "left": 0
-                        },
-                        "duration": 0,
-                        "useVoronoi": true,
-                        "interpolate": "linear",
-                        "xScale": d3.time.scale()
+                        "forceY": [0, 100]
                     },
                     "lines2": {
-                        "dispatch": {},
-                        "width": 960,
-                        "height": 500,
-                        "xDomain": null,
-                        "yDomain": null,
-                        "pointDomain": [
-                            16,
-                            256
-                        ],
-                        "xRange": null,
-                        "yRange": null,
-                        "pointRange": null,
                         "forceX": [],
-                        "forceY": [0, 100],
-                        "forcePoint": [],
-                        "interactive": false,
-                        "padDataOuter": 0.1,
-                        "padData": false,
-                        "clipEdge": false,
-                        "clipVoronoi": true,
-                        "showVoronoi": false,
-                        "id": 29557,
-                        "interactiveUpdateDelay": 300,
-                        "showLabels": false,
-                        "margin": {
-                            "top": 0,
-                            "right": 0,
-                            "bottom": 0,
-                            "left": 0
-                        },
-                        "duration": 250,
-                        "useVoronoi": true,
-                        "interpolate": "linear",
-                        "xScale": d3.time.scale()
+                        "forceY": [0, 100]
                     },
-                    "interactiveLayer": {
-                        "dispatch": {},
-                        "tooltip": {
-                            "duration": 0,
-                            "gravity": "w",
-                            "distance": 25,
-                            "snapDistance": 0,
-                            "classes": null,
-                            "chartContainer": null,
-                            "enabled": true,
-                            "hideDelay": 0,
-                            "headerEnabled": true,
-                            "fixedTop": null,
-                            "hidden": false,
-                            "data": null,
-                            "id": "nvtooltip-48782"
-                        },
-                        "margin": {
-                            "left": 40,
-                            "top": 30
-                        },
-                        "width": null,
-                        "height": null,
-                        "showGuideLine": true,
-                        "svgContainer": null
-                    },
-                    "tooltip": {
-                        "duration": 100,
-                        "gravity": "w",
-                        "distance": 25,
-                        "snapDistance": 0,
-                        "classes": null,
-                        "chartContainer": null,
-                        "enabled": true,
-                        "hideDelay": 200,
-                        "headerEnabled": true,
-                        "fixedTop": null,
-                        "hidden": true,
-                        "data": null,
-                        "id": "nvtooltip-66661"
-                    },
-                    "width": null,
-                    "interpolate": "linear",
-                    "clipEdge": true,
-                    "clipVoronoi": true,
-                    "forcePoint": [],
-                    "forceX": [],
-                    "interactive": true,
-                    "interactiveUpdateDelay": 100,
-                    "padData": false,
-                    "padDataOuter": 0.1,
-                    "pointDomain": [
-                        16,
-                        256
-                    ],
-                    "pointRange": null,
-                    "showLabels": false,
-                    "showVoronoi": false,
-                    "useVoronoi": true,
-                    "xDomain": null,
-                    "xRange": null,
-                    "yDomain": null,
-                    "yRange": null,
-                    "showLegend": false,
-                    "legendPosition": "top",
-                    "showXAxis": true,
-                    "showYAxis": true,
-                    "focusEnable": true,
-                    "focusShowAxisX": false,
-                    "focusShowAxisY": false,
-                    "brushExtent": null,
-                    "defaultState": null,
-                    "noData": "Waiting for metrics...",
-                    "focusMargin": {
-                        "top": 0,
-                        "right": 20,
-                        "bottom": 20,
-                        "left": 60
-                    },
-                    "rightAlignYAxis": false
+                    "noData": 'Waiting for metrics...',
+                    "showLegend": false
                 },
                 title: {
-                    enable: false,
-                    text: ''
+                    enable: false
                 },
                 subtitle: {
-                    enable: false,
-                    text: '',
-                    css: {
-                        'text-align': 'center',
-                        'margin': '10px 13px 0px 7px'
-                    }
+                    enable: false
                 },
                 caption: {
-                    enable: false,
-                    html: '<b>Figure 1.</b>',
-                    css: {
-                        'text-align': 'justify',
-                        'margin': '10px 13px 0px 7px'
-                    }
+                    enable: false
                 }
             };
         }

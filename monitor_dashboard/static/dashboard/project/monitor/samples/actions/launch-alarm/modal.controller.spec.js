@@ -105,7 +105,7 @@
 
         function createController() {
             return $controller('LaunchAlarmModalController', {
-                '$modalInstance': modalInstance,
+                '$uibModalInstance': modalInstance,
                 'horizon.app.core.openstack-service-api.monitor': monitorAPI,
                 'instance_id': 1,
             });

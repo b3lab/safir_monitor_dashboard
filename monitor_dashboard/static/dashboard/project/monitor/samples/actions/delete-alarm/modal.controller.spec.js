@@ -88,7 +88,7 @@
 
         function createController() {
             return $controller('DeleteAlarmModalController', {
-                '$modalInstance': modalInstance,
+                '$uibModalInstance': modalInstance,
                 'horizon.app.core.openstack-service-api.monitor': monitorAPI,
                 'alarms': {alarm1: 'alarm1'},
             });

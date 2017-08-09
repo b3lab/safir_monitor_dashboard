@@ -42,11 +42,7 @@
     var basePath = $windowProvider.$get().STATIC_URL + 'dashboard/admin/project_monitor/';
     $provide.constant('horizon.dashboard.admin.project_monitor.basePath', basePath);
 
-    var samples = '/admin/project_monitor';
 
-    $routeProvider.when(samples, {
-        templateUrl: basePath + 'projects/project_monitor.html'
-      });
   }
 
 }());

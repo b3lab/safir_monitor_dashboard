@@ -191,7 +191,7 @@
             it('should retrieve CPU usage datum of given host properly', function () {
                 var ctrl = createController();
                 from_date = getYesterday().toISOString();
-                to_date = new Date().toISOString()
+                to_date = new Date().toISOString();
                 expect(monitorAPI.getHostCPUUtilization).toHaveBeenCalledWith(from_date, to_date, ctrl.hostLimit, 'host1');
                 expect(ctrl.totalHostCpuData[0].values[0].y).toEqual(hostCpuUsage['host1'].data[0].counter_volume);
             });
