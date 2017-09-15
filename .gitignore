@@ -1,7 +1,7 @@
 .tox/
 .idea/
 .eggs/
+lib/
 *.egg/
 *.egg-info/
 *.pyc
-

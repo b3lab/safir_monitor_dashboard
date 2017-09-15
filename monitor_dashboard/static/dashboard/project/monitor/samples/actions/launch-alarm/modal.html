@@ -92,21 +92,6 @@
             <div class="col-xs-12 col-sm-8 col-md-6">
                 <div class="form-group required"
                          ng-class="{ 'has-error': form.period.$invalid && form.period.$dirty }">
-                    <label translate class="control-label" for="period">
-                        Period (sec)
-                        <span class="hz-icon-required fa fa-asterisk"></span>
-                    </label>
-                    <input name="period" id="period" type="number" class="form-control"
-                           ng-model="modal.period" ng-pattern="/^\d+$/" min="600"
-                           ng-required="true">
-          <span class="help-block" ng-show="form.period.$invalid && form.period.$dirty">
-            {$ ::modal.periodError $}
-          </span>
-                </div>
-            </div>
-            <div class="col-xs-12 col-sm-8 col-md-6">
-                <div class="form-group required"
-                         ng-class="{ 'has-error': form.period.$invalid && form.period.$dirty }">
                     <label translate class="control-label" for="evaluationPeriods">
                         Evaluation Periods
                         <span class="hz-icon-required fa fa-asterisk"></span>

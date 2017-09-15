@@ -45,7 +45,19 @@
         ////////////////////////////////
         function init() {
             ctrl.hostList = [];
+
             ctrl.allselected = true;
+            ctrl.toggled = 1;
+            ctrl.toggledTime = 1;
+
+            ctrl.from_date = getYesterday().toISOString();
+            ctrl.to_date = new Date().toISOString();
+
+            ctrl.toggleTimeButtonOptions = [
+                {label: gettext('Daily'), value: 1},
+                {label: gettext('Weekly'), value: 2},
+                {label: gettext('Monthly'), value: 3}
+            ];
             ctrl.toggleButtonOptions = [
                 {label: gettext('CPU Usage'), value: 1},
                 {label: gettext('RAM Usage'), value: 2},
@@ -53,7 +65,6 @@
                 {label: gettext('Incoming Network Bandwidth'), value: 4},
                 {label: gettext('Outgoing Network Bandwidth'), value: 5}
             ];
-            ctrl.toggled = 1;
 
             configCharts();
             nv.models.tooltip().duration(0);
@@ -88,6 +99,11 @@
                     diskUsage: [],
                     incomingNetworkUsage: [],
                     outgoingNetworkUsage: [],
+                    currentCpuUsage: null,
+                    currentRamUsage: null,
+                    currentDiskUsage: null,
+                    currentIncomingNetworkUsage: null,
+                    currentOutgoingNetworkUsage: null,
                     selected: true
                 };
 
@@ -97,94 +113,158 @@
             console.timeEnd('getHosts');
         }
 
+        ctrl.timeChanged = function () {
+            console.log('Time Changed');
+            if (ctrl.toggledTime == 1) {
+                ctrl.from_date = getYesterday().toISOString();
+            } else if (ctrl.toggledTime == 2) {
+                ctrl.from_date = getLastWeek().toISOString();
+            } else {
+                ctrl.from_date = getLastMonth().toISOString();
+            }
+
+            ctrl.totalHostCpuData = [];
+            ctrl.totalHostRamData = [];
+            ctrl.totalHostDiskData = [];
+            ctrl.totalHostIncomingNetworkData = [];
+            ctrl.totalHostOutgoingNetworkData = [];
+
+            for (var i = 0; i < ctrl.hostList.length; i++) {
+                var host = ctrl.hostList[i];
+                host.cpuUsage = [];
+                host.ramUsage = [];
+                host.diskUsage = [];
+                host.incomingNetworkUsage = [];
+                host.outgoingNetworkUsage = [];
+
+                getUtilizationData(host.hypervisor_hostname);
+            }
+        };
+
+        function getYesterday() {
+            return new Date(new Date().getTime() - (24 * 60 * 60 * 1000));
+        }
+
+        function getLastWeek() {
+            var today = new Date();
+            return new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7);
+        }
+
+        function getLastMonth() {
+            var today = new Date();
+            return new Date(today.getFullYear(), today.getMonth(), today.getDate() - 30);
+        }
+
         function getUtilizationData(hostname) {
-
-            var from_date = getYesterday().toISOString();
-            var to_date = new Date().toISOString();
-            // sample count for one host per day if collected every ten minutes = 144
-            ctrl.hostLimit = ctrl.hostList.length * 144;
-
-            api.getHostCPUUtilization(from_date, to_date, ctrl.hostLimit, hostname).success(fillHostCpuUtilization);
-            api.getHostRAMUtilization(from_date, to_date, ctrl.hostLimit, hostname).success(fillHostRamUtilization);
-            api.getHostNetworkUtilization(from_date, to_date, ctrl.hostLimit, hostname).success(fillHostNetworkUtilization);
-            api.getHostDiskUtilization(from_date, to_date, ctrl.hostLimit, hostname).success(fillHostDiskUtilization);
+            api.getHardwareMeasures('hardware.cpu.util', hostname, ctrl.from_date, ctrl.to_date).success(getHardwareMeasures);
+            api.getHardwareMeasures('hardware.memory.util', hostname, ctrl.from_date, ctrl.to_date).success(getHardwareMeasures);
+            api.getHardwareMeasures('hardware.disk.util', hostname, ctrl.from_date, ctrl.to_date).success(getHardwareMeasures);
+            api.getHardwareMeasures('hardware.network.incoming.bytes.rate', hostname, ctrl.from_date, ctrl.to_date).success(getHardwareMeasures);
+            api.getHardwareMeasures('hardware.network.outgoing.bytes.rate', hostname, ctrl.from_date, ctrl.to_date).success(getHardwareMeasures);
         }
 
-        function fillHostCpuUtilization(response) {
-            console.time('fillHostCpuUtilization');
-            if (response.items != undefined) {
-                addHostUtilization(response.items,
-                    'cpuUsage',
-                    'totalHostCpuData');
-            }
-            console.timeEnd('fillHostCpuUtilization');
-        }
+       function getHardwareMeasures(response) {
+            if (response.metric_name != undefined &&
+                response.hostname != undefined &&
+                response.measures != undefined) {
 
-        function fillHostRamUtilization(response) {
-            console.time('fillHostRamUtilization');
-            if (response.items != undefined) {
-                addHostUtilization(response.items,
-                    'ramUsage',
-                    'totalHostRamData');
-            }
-            console.timeEnd('fillHostRamUtilization');
-        }
+                var hostname = response.hostname;
 
-        function fillHostNetworkUtilization(response) {
-            console.time('fillHostNetworkUtilization');
-            var incomingtraffic = response.incomingtraffic;
-            var outgoingtraffic = response.outgoingtraffic;
-
-            if (incomingtraffic != undefined) {
-                addHostUtilization(incomingtraffic,
-                    'incomingNetworkUsage',
-                    'totalHostIncomingNetworkData');
-            }
-            if (outgoingtraffic != undefined) {
-                addHostUtilization(outgoingtraffic,
-                    'outgoingNetworkUsage',
-                    'totalHostOutgoingNetworkData');
-            }
-            console.timeEnd('fillHostNetworkUtilization');
-        }
-
-        function fillHostDiskUtilization(response) {
-            console.time('fillHostDiskUtilization');
-            if (response.items != undefined) {
-                addHostUtilization(response.items,
-                    'diskUsage',
-                    'totalHostDiskData');
-            }
-            console.timeEnd('fillHostDiskUtilization');
-        }
-
-        function addHostUtilization(data, host_data, total_data) {
-            for (var key in data) {
-                if (data.hasOwnProperty(key)) {
-                    var hostname = key;
+                for (var i = 0; i < response.measures.length; ++i) {
+                    var resource_id = response.measures[i].resource_id;
+                    var util_data = response.measures[i].utils;
                     var utils = [];
-                    for (var i = 0; i < data[key].data.length; i++) {
-                        var timestamp = new Date(data[key].data[i].timestamp);
-                        var volume = parseFloat(data[key].data[i].counter_volume);
+                    for (var j = 0; j < util_data.length; j++) {
+                        var timestamp = new Date(util_data[j][0]);
+                        var volume = parseFloat(util_data[j][2]);
                         utils.push({x: timestamp, y: volume});
                     }
 
-                    var found = false;
-                    var j = 0;
-                    while (j < ctrl.hostList.length) {
-                        if (ctrl.hostList[j].hypervisor_hostname == hostname) {
-                            ctrl.hostList[j][host_data] = utils;
-                            found = true;
-
-                            if (utils.length > 1) {
-                                ctrl[total_data].push({
-                                    values: utils,
-                                    key: hostname,
-                                    color: ctrl.hostList[j].color
-                                });
+                    if (utils.length > 0) {
+                        var k = 0;
+                        var found = false;
+                        while (k < ctrl.hostList.length) {
+                            if (ctrl.hostList[k].hypervisor_hostname == hostname) {
+                                var keyname = resource_id;
+                                setUtilData(ctrl.hostList[k],
+                                        utils,
+                                        response.metric_name,
+                                        keyname);
+                                found = true;
                             }
+                            k += 1;
                         }
-                        j += 1;
+                    }
+                }
+            }
+        }
+
+        function setUtilData (host, utils, metric_name, keyname) {
+            var color = host.color;
+            var host_data = '';
+            var total_data = '';
+
+            if (metric_name == 'hardware.cpu.util') {
+                host_data = 'cpuUsage';
+                total_data = 'totalHostCpuData';
+            }
+            else if (metric_name == 'hardware.memory.util') {
+                host_data = 'ramUsage';
+                total_data = 'totalHostRamData';
+            }
+            else if (metric_name == 'hardware.disk.util') {
+                host_data = 'diskUsage';
+                total_data = 'totalHostDiskData';
+            }
+            else if (metric_name == 'hardware.network.incoming.bytes.rate') {
+                host_data = 'incomingNetworkUsage';
+                total_data = 'totalHostIncomingNetworkData';
+            }
+            else if (metric_name == 'hardware.network.outgoing.bytes.rate') {
+                host_data = 'outgoingNetworkUsage';
+                total_data = 'totalHostOutgoingNetworkData';
+            }
+
+            host[host_data].push({'keyname': keyname,
+                                  'utils': utils});
+
+            if (utils.length > 1) {
+                ctrl[total_data].push({
+                    values: utils,
+                    key: keyname,
+                    color: color
+                });
+            }
+
+            if (utils.length > 0) {
+                if (host_data == "cpuUsage") {
+                    host.currentCpuUsage = utils[utils.length - 1].y;
+                } else if (host_data == "ramUsage") {
+                    host.currentRamUsage = utils[utils.length - 1].y;
+                } else if (host_data == "diskUsage") {
+                    host.currentDiskUsage = utils[utils.length - 1].y;
+
+                    // if we get disks' utilization separately we need to calculate mean usage
+                    // if (host.currentDiskUsage == null) {
+                    //     host.currentDiskUsage = utils[utils.length - 1].y;
+                    // } else {
+                    //     var cnt = host[diskUsage].length;
+                    //     host.currentDiskUsage =
+                    //         ((host.currentDiskUsage * (cnt - 1)) +  utils[utils.length - 1].y) / cnt;
+                    // }
+                } else if (host_data == "incomingNetworkUsage") {
+                    if (host.currentIncomingNetworkUsage == null) {
+                        host.currentIncomingNetworkUsage = utils[utils.length - 1].y;
+                    } else {
+                        host.currentIncomingNetworkUsage =
+                            host.currentIncomingNetworkUsage + utils[utils.length - 1].y;
+                    }
+                } else if (host_data == "outgoingNetworkUsage") {
+                    if (host.currentOutgoingNetworkUsage == null) {
+                        host.currentOutgoingNetworkUsage = utils[utils.length - 1].y;
+                    } else {
+                        host.currentOutgoingNetworkUsage =
+                            host.currentOutgoingNetworkUsage + utils[utils.length - 1].y;
                     }
                 }
             }
@@ -206,52 +286,29 @@
             ctrl.totalHostIncomingNetworkData = [];
             ctrl.totalHostOutgoingNetworkData = [];
 
-            // We collect selected hosts' cpu, ram and disk usage datum
+            // We collect selected hosts' cpu, ram and disk usage data
             for (var i = 0; i < ctrl.hostList.length; i++) {
                 var host = ctrl.hostList[i];
                 if (host.selected) {
-                    if (host.cpuUsage.length > 1)
-                        ctrl.totalHostCpuData.push({
-                            values: host.cpuUsage,
-                            key: host.hypervisor_hostname,
-                            color: host.color
-                        });
-                    if (host.ramUsage.length > 1)
-                        ctrl.totalHostRamData.push({
-                            values: host.ramUsage,
-                            key: host.hypervisor_hostname,
-                            color: host.color
-                        });
-                    if (host.diskUsage.length > 1)
-                        ctrl.totalHostDiskData.push({
-                            values: host.diskUsage,
-                            key: host.hypervisor_hostname,
-                            color: host.color
-                        });
-                    if (host.incomingNetworkUsage.length > 1)
-                        ctrl.totalHostIncomingNetworkData.push({
-                            values: host.incomingNetworkUsage,
-                            key: host.hypervisor_hostname,
-                            color: host.color
-                        });
-                    if (host.outgoingNetworkUsage.length > 1)
-                        ctrl.totalHostOutgoingNetworkData.push({
-                            values: host.outgoingNetworkUsage,
-                            key: host.hypervisor_hostname,
-                            color: host.color
-                        });
+                    var host = ctrl.hostList[i];
+                    showUsage(host, 'cpuUsage', 'totalHostCpuData');
+                    showUsage(host, 'ramUsage', 'totalHostRamData');
+                    showUsage(host, 'diskUsage', 'totalHostDiskData');
+                    showUsage(host, 'incomingNetworkUsage', 'totalHostIncomingNetworkData');
+                    showUsage(host, 'outgoingNetworkUsage', 'totalHostOutgoingNetworkData');
                 }
             }
         }
 
-        function getLastWeek() {
-            var today = new Date();
-            var lastWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7);
-            return lastWeek;
-        }
-
-        function getYesterday() {
-            return new Date(new Date().getTime() - (24 * 60 * 60 * 1000));
+        function showUsage(host, host_data, total_data) {
+            for (var i = 0; i < host[host_data].length; i++) {
+                if (host[host_data][i]['utils'].length > 1)
+                    ctrl[total_data].push({
+                        values: host[host_data][i]['utils'],
+                        key: host[host_data][i]['keyname'],
+                        color: host.color
+                    });
+            }
         }
 
         function configCharts() {
@@ -292,7 +349,7 @@
                     "margin": {
                         "top": 20,
                         "right": 20,
-                        "bottom": 60,
+                        "bottom": 20,
                         "left": 40
                     },
                     "duration": 100,
@@ -329,6 +386,12 @@
                         "forceY": [0, 100]
                     },
                     "noData": 'Waiting for metrics...',
+                    "focusMargin": {
+                      "top": 10,
+                      "right": 20,
+                      "bottom": 0,
+                      "left": 40
+                    },
                     "showLegend": false
                 },
                 title: {

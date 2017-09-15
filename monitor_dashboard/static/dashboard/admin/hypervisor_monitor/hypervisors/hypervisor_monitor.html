@@ -8,7 +8,7 @@
                     <label class="btn btn-default" id="resources"
                            ng-repeat="option in ctrl.toggleButtonOptions"
                            ng-model="ctrl.toggled"
-                           btn-radio="option.value">{$ ::option.label $}</label>
+                           uib-btn-radio="option.value">{$ ::option.label $}</label>
                 </div>
             </div>
         </div>
@@ -31,6 +31,17 @@
         <div ng-if="ctrl.toggled == 5">
             <nvd3 options="ctrl.networkChartOptions" config="ctrl.config"
                   data="ctrl.totalHostOutgoingNetworkData" class="with-3d-shadow with-transitions"></nvd3>
+        </div>
+        <div align="center" style="margin-top: 20px">
+                <div class="form-group">
+                    <div class="btn-group">
+                        <label class="btn btn-default" id="time"
+                               ng-repeat="option in ctrl.toggleTimeButtonOptions"
+                               ng-model="ctrl.toggledTime"
+                               ng-click="ctrl.timeChanged()"
+                               uib-btn-radio="option.value">{$ ::option.label $}</label>
+                    </div>
+                </div>
         </div>
     </div>
 
@@ -162,19 +173,15 @@
                     <hr class="header_rule">
                     <dl class="dl-horizontal">
                         <dt>{$ 'CPU Usage' | translate $}</dt>
-                        <dd>{$ item.cpuUsage[item.cpuUsage.length-1].y $} {$ '%' $}</dd>
+                        <dd>{$ item.currentCpuUsage $} {$ '%' $}</dd>
                         <dt>{$ 'RAM Usage' | translate $}</dt>
-                        <dd>{$ item.ramUsage[item.ramUsage.length-1].y $} {$ '%' $}</dd>
+                        <dd>{$ item.currentRamUsage $} {$ '%' $}</dd>
                         <dt>{$ 'Disk Usage' | translate $}</dt>
-                        <dd>{$ item.diskUsage[item.diskUsage.length-1].y $} {$ '%' $}</dd>
+                        <dd>{$ item.currentDiskUsage $} {$ '%' $}</dd>
                         <dt>{$ 'Incoming Network BW' | translate $}</dt>
-                        <dd>{$ item.incomingNetworkUsage[item.incomingNetworkUsage.length-1].y $} {$ 'Mbps' | translate
-                            $}
-                        </dd>
+                        <dd>{$ item.currentIncomingNetworkUsage $} {$ 'Mbps' | translate$}</dd>
                         <dt>{$ 'Outgoing Network BW' | translate $}</dt>
-                        <dd>{$ item.outgoingNetworkUsage[item.outgoingNetworkUsage.length-1].y $} {$ 'Mbps' | translate
-                            $}
-                        </dd>
+                        <dd>{$ item.currentOutgoingNetworkUsage $} {$ 'Mbps' | translate$}</dd>
                     </dl>
                 </div>
             </td>

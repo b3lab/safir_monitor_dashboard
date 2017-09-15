@@ -82,6 +82,17 @@
                 return finalVal + '\n';
             };
 
+            var processInstanceData = function (csvFile, instance, data_name, heading) {
+                for (var i = 0; i < instance[data_name].length; i++) {
+                    if (instance[data_name][i]['utils'].length > 1)
+                        csvFile = processRows(csvFile,
+                                    instance[data_name][i]['utils'],
+                                    'TIME,'+instance[data_name][i]['keyname'] + '_' + heading);
+
+                }
+                return csvFile;
+            };
+
             var processRows = function (csvFile, rows, header) {
                 csvFile += header + '\n';
                 for (var i = 0; i < rows.length; i++) {
@@ -93,19 +104,15 @@
 
             var csvFile = '';
 
-            csvFile = processRows(csvFile, instance.cpuUsage,
-                                  'TIME,CPU_USAGE_(%)');
-            csvFile = processRows(csvFile, instance.ramUsage,
-                                  'TIME,RAM_USAGE_(%)');
-            csvFile = processRows(csvFile, instance.diskUsage,
-                                  'TIME,DISK_USAGE_(%)');
-            csvFile = processRows(csvFile, instance.incomingNetworkUsage,
-                                  'TIME,Incoming_Network_Bandwidth_(Mbps)');
-            csvFile = processRows(csvFile, instance.outgoingNetworkUsage,
-                                  'TIME,Outgoing_Network_Bandwidth_(Mbps)');
+            csvFile = processInstanceData(csvFile, instance, 'cpuUsage', 'CPU_USAGE_(%)');
+            csvFile = processInstanceData(csvFile, instance, 'ramUsage', 'RAM_USAGE_(%)');
+            csvFile = processInstanceData(csvFile, instance, 'diskUsage', 'DISK_USAGE_(%)');
+            csvFile = processInstanceData(csvFile, instance, 'incomingNetworkUsage', 'Incoming_Network_Bandwidth_(Mbps)');
+            csvFile = processInstanceData(csvFile, instance, 'outgoingNetworkUsage', 'Outgoing_Network_Bandwidth_(Mbps)');
 
             return csvFile;
         }
+
 
         function exportToCsv(filename, csvFile) {
             var blob = new Blob([csvFile], {type: 'text/csv;charset=utf-8;'});

@@ -43,119 +43,19 @@
                 'incomingNetworkUsage': [],
                 'outgoingNetworkUsage': []
             }];
-            var instanceCpuUsage = {
-                'project-1': {
-                    'instance-1': {
-                        'data': [{
-                            'counter_name': 'cpu.util',
-                            'counter_volume': '4.00',
-                            'timestamp': '2017-06-12T11:36:58.593000'
-                        },
-                            {
-                                'counter_name': 'cpu.util',
-                                'counter_volume': '5.00',
-                                'timestamp': '2017-06-12T11:36:48.593000'
-                            }
-                        ]
-                    }
-                }
-            };
-            var instanceRamUsage = {
-                'project-1': {
-                    'instance-1': {
-                        'data': [{
-                            'counter_name': 'memory.util',
-                            'counter_volume': '80.00',
-                            'timestamp': '2017-06-12T11:36:58.593000'
-                        },
-                            {
-                                'counter_name': 'memory.util',
-                                'counter_volume': '75.00',
-                                'timestamp': '2017-06-12T11:36:48.593000'
-                            }
-                        ]
-                    }
-                }
-            };
-            var instanceDiskUsage = {
-                'project-1': {
-                    'instance-1': {
-                        'data': [{
-                            'counter_name': 'disk.util',
-                            'counter_volume': '20.00',
-                            'timestamp': '2017-06-12T11:36:58.593000'
-                        },
-                            {
-                                'counter_name': 'disk.util',
-                                'counter_volume': '25.00',
-                                'timestamp': '2017-06-12T11:36:48.593000'
-                            }
-                        ]
-                    }
-                }
-            };
-            var instanceIncomingNetworkUsage = {
-                'project-1': {
-                    'instance-1': {
-                        'data': [{
-                            'counter_name': 'network.incoming.bytes.rate',
-                            'counter_volume': '30.00',
-                            'timestamp': '2017-06-12T11:36:58.593000'
-                        },
-                            {
-                                'counter_name': 'network.incoming.bytes.rate',
-                                'counter_volume': '40.00',
-                                'timestamp': '2017-06-12T11:36:48.593000'
-                            }
-                        ]
-                    }
-                }
-            };
-            var instanceOutcomingNetworkUsage = {
-                'project-1': {
-                    'instance-1': {
-                        'data': [{
-                            'counter_name': 'network.outcoming.bytes.rate',
-                            'counter_volume': '50.00',
-                            'timestamp': '2017-06-12T11:36:58.593000'
-                        },
-                            {
-                                'counter_name': 'network.outcoming.bytes.rate',
-                                'counter_volume': '60.00',
-                                'timestamp': '2017-06-12T11:36:48.593000'
-                            }
-                        ]
-                    }
-                }
-            };
+            var instanceCpuUsage = [
+                    ["2017-09-11T13:40:00+00:00", 300.0, 4.00],
+                    ["2017-09-11T13:45:00+00:00", 300.0, 5.00]
+            ];
 
-            function fakeGetInstanceCPUUtilizationAPI() {
+            function fakeGetMeasuresAPI() {
                 return {
-                    success: function (getInstanceCPUUtilization) {
-                        getInstanceCPUUtilization({items: instanceCpuUsage})
-                    }
-                };
-            }
-            function fakeGetInstanceRamUtilizationAPI() {
-                return {
-                    success: function (getInstanceRamUtilization) {
-                        getInstanceRamUtilization({items: instanceRamUsage})
-                    }
-                };
-            }
-            function fakeGetInstanceNetworkUtilizationAPI() {
-                return {
-                    success: function (getInstanceNetworkUtilization) {
-                        getInstanceNetworkUtilization({incomingtraffic: instanceIncomingNetworkUsage,
-                                                       outgoingtraffic: instanceOutcomingNetworkUsage}
-                                                     )
-                    }
-                };
-            }
-            function fakeGetInstanceDiskUtilizationAPI() {
-                return {
-                    success: function (getInstanceDiskUtilization) {
-                        getInstanceDiskUtilization({items: instanceDiskUsage})
+                    success: function (getMeasures) {
+                        getMeasures({metric_name: 'cpu_util',
+                                     project_id: 'project-1',
+                                     instance_id: 'instance-1',
+                                     measures: [{'resource_id': 'instance-1',
+                                                'utils': instanceCpuUsage}] })
                     }
                 };
             }
@@ -193,10 +93,7 @@
                 spyOn(keystoneAPI, 'getProjects').and.callFake(fakeGetProjectAPI);
                 spyOn(keystoneAPI, 'getCurrentUserSession').and.callFake(fakeGetCurrentUserSessionAPI);
                 spyOn(monitorAPI, 'getInstances').and.callFake(fakeGetInstancesAPI);
-                spyOn(monitorAPI, 'getInstanceCPUUtilization').and.callFake(fakeGetInstanceCPUUtilizationAPI);
-                spyOn(monitorAPI, 'getInstanceRamUtilization').and.callFake(fakeGetInstanceRamUtilizationAPI);
-                spyOn(monitorAPI, 'getInstanceNetworkUtilization').and.callFake(fakeGetInstanceNetworkUtilizationAPI);
-                spyOn(monitorAPI, 'getInstanceDiskUtilization').and.callFake(fakeGetInstanceDiskUtilizationAPI);
+                spyOn(monitorAPI, 'getMeasures').and.callFake(fakeGetMeasuresAPI);
 
             }));
             function createController() {
@@ -233,44 +130,13 @@
                 expect(monitorAPI.getInstances).toHaveBeenCalledWith(ctrl.projectList[0].id,1);
                 expect(ctrl.instanceList.length).toBe(1);
             });
-            it('should retrieve CPU usage datum of instances of given project properly', function () {
+            it('should retrieve CPU measures of instances of the given project properly', function () {
                 var ctrl = createController();
                 ctrl.selectedProjects = ctrl.projectList;
                 $scope.selectProjects();
-                from_date = getYesterday().toISOString();
-                to_date = new Date().toISOString();
-                expect(monitorAPI.getInstanceCPUUtilization).toHaveBeenCalledWith(from_date, to_date, 144, ctrl.instanceList[0].id);
-                expect(ctrl.totalCpuData[0].values[0].y).toEqual(instanceCpuUsage['project-1']['instance-1'].data[0].counter_volume);
-            });
-            it('should retrieve RAM usage datum of instances of given project properly', function () {
-                var ctrl = createController();
-                ctrl.selectedProjects = ctrl.projectList;
-                $scope.selectProjects();
-                from_date = getYesterday().toISOString();
-                to_date = new Date().toISOString();
-                expect(monitorAPI.getInstanceRamUtilization).toHaveBeenCalledWith(from_date, to_date, 144, ctrl.instanceList[0].id);
-                expect(ctrl.totalRamData[0].values[0].y).toEqual(instanceRamUsage['project-1']['instance-1'].data[0].counter_volume);
-            });
-            it('should retrieve Network usage datum of instances of given project properly', function () {
-                var ctrl = createController();
-                ctrl.selectedProjects = ctrl.projectList;
-                $scope.selectProjects();
-                from_date = getYesterday().toISOString();
-                to_date = new Date().toISOString();
-                expect(monitorAPI.getInstanceNetworkUtilization).toHaveBeenCalledWith(from_date, to_date, 144, ctrl.instanceList[0].id);
-                expect(ctrl.totalIncomingNetworkData[0].values[0].y).toEqual(instanceIncomingNetworkUsage['project-1']['instance-1'].data[0].counter_volume);
-                expect(ctrl.totalOutgoingNetworkData[0].values[0].y).toEqual(instanceOutcomingNetworkUsage['project-1']['instance-1'].data[0].counter_volume);
-            });
-            it('should retrieve Disk usage datum of instances of given project properly', function () {
-                var ctrl = createController();
-                ctrl.selectedProjects = ctrl.projectList;
-                $scope.selectProjects();
-                from_date = getYesterday().toISOString();
-                to_date = new Date().toISOString();
-                expect(monitorAPI.getInstanceDiskUtilization).toHaveBeenCalledWith(from_date, to_date, 144, ctrl.instanceList[0].id);
-                expect(ctrl.totalDiskData[0].values[0].y).toEqual(instanceDiskUsage['project-1']['instance-1'].data[0].counter_volume);
+                expect(monitorAPI.getMeasures).toHaveBeenCalledWith('cpu_util', 'instance-1', 'project-1', ctrl.from_date, ctrl.to_date);
+                expect(ctrl.totalCpuData[0].values[0].y).toEqual(instanceCpuUsage[0][2]);
             });
         });
-
     });
 })();

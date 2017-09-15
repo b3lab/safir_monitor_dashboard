@@ -29,81 +29,10 @@
                 'id': 1,
                 'hypervisor_hostname': 'host1'
             }];
-            var hostCpuUsage = {
-                'host1': {
-                    'data': [{
-                        'counter_name': 'hardware.cpu.util',
-                        'counter_volume': '4.00',
-                        'timestamp': '2017-06-12T11:36:58.593000'
-                    },
-                        {
-                            'counter_name': 'hardware.cpu.util',
-                            'counter_volume': '5.00',
-                            'timestamp': '2017-06-12T11:36:48.593000'
-                        }
-                    ]
-                }
-            };
-            var hostRamUsage = {
-                'host1': {
-                    'data': [{
-                        'counter_name': 'hardware.memory.util',
-                        'counter_volume': '80.00',
-                        'timestamp': '2017-06-12T11:36:58.593000'
-                    },
-                        {
-                            'counter_name': 'hardware.memory.util',
-                            'counter_volume': '75.00',
-                            'timestamp': '2017-06-12T11:36:48.593000'
-                        }
-                    ]
-                }
-            };
-            var hostDiskUsage = {
-                'host1': {
-                    'data': [{
-                        'counter_name': 'hardware.disk.util',
-                        'counter_volume': '20.00',
-                        'timestamp': '2017-06-12T11:36:58.593000'
-                    },
-                        {
-                            'counter_name': 'hardware.disk.util',
-                            'counter_volume': '25.00',
-                            'timestamp': '2017-06-12T11:36:48.593000'
-                        }
-                    ]
-                }
-            };
-            var hostIncomingNetworkUsage = {
-                'host1': {
-                    'data': [{
-                        'counter_name': 'hardware.network.incoming.bytes.rate',
-                        'counter_volume': '30.00',
-                        'timestamp': '2017-06-12T11:36:58.593000'
-                    },
-                        {
-                            'counter_name': 'hardware.disk.util',
-                            'counter_volume': '40.00',
-                            'timestamp': 'hardware.network.incoming.bytes.rate'
-                        }
-                    ]
-                }
-            };
-            var hostOutcomingNetworkUsage = {
-                'host1': {
-                    'data': [{
-                        'counter_name': 'hardware.network.outcoming.bytes.rate',
-                        'counter_volume': '50.00',
-                        'timestamp': '2017-06-12T11:36:58.593000'
-                    },
-                        {
-                            'counter_name': 'hardware.disk.util',
-                            'counter_volume': '60.00',
-                            'timestamp': 'hardware.network.outcoming.bytes.rate'
-                        }
-                    ]
-                }
-            };
+            var hostCpuUsage = [
+                    ["2017-09-11T13:40:00+00:00", 300.0, 0.28],
+                    ["2017-09-11T13:45:00+00:00", 300.0, 0.23]
+            ];
 
             function fakeGetHostsAPI() {
                 return {
@@ -112,33 +41,13 @@
                     }
                 };
             }
-            function fakegetHostCPUUtilizationAPI() {
+            function fakeGetHardwareMeasuresAPI() {
                 return {
-                    success: function (getHostCPUUtilization) {
-                        getHostCPUUtilization({items: hostCpuUsage})
-                    }
-                };
-            }
-            function fakegetHostRAMUtilizationAPI() {
-                return {
-                    success: function (getHostRAMUtilization) {
-                        getHostRAMUtilization({items: hostRamUsage})
-                    }
-                };
-            }
-            function fakegetHostNetworkUtilizationAPI() {
-                return {
-                    success: function (getHostNetworkUtilization) {
-                        getHostNetworkUtilization({incomingtraffic: hostIncomingNetworkUsage,
-                                                   outgoingtraffic: hostOutcomingNetworkUsage}
-                                                   )
-                    }
-                };
-            }
-            function fakegetHostDiskUtilizationAPI() {
-                return {
-                    success: function (getHostDiskUtilization) {
-                        getHostDiskUtilization({items: hostDiskUsage})
+                    success: function (getHardwareMeasures) {
+                        getHardwareMeasures({metric_name: 'hardware.cpu.util',
+                                             hostname: 'host1',
+                                             measures: [{'resource_id': 'host1',
+                                                        'utils': hostCpuUsage}] })
                     }
                 };
             }
@@ -152,10 +61,7 @@
                 controller = $injector.get('$controller');
                 $scope = $injector.get('$rootScope').$new();
                 spyOn(monitorAPI, 'getHosts').and.callFake(fakeGetHostsAPI);
-                spyOn(monitorAPI, 'getHostCPUUtilization').and.callFake(fakegetHostCPUUtilizationAPI);
-                spyOn(monitorAPI, 'getHostRAMUtilization').and.callFake(fakegetHostRAMUtilizationAPI);
-                spyOn(monitorAPI, 'getHostNetworkUtilization').and.callFake(fakegetHostNetworkUtilizationAPI);
-                spyOn(monitorAPI, 'getHostDiskUtilization').and.callFake(fakegetHostDiskUtilizationAPI);
+                spyOn(monitorAPI, 'getHardwareMeasures').and.callFake(fakeGetHardwareMeasuresAPI);
             }));
 
             function createController() {
@@ -188,34 +94,12 @@
                 expect(monitorAPI.getHosts).toHaveBeenCalled();
                 expect(ctrl.hostList.length).toBe(1);
             });
-            it('should retrieve CPU usage datum of given host properly', function () {
+            it('should retrieve CPU measures of the given host properly', function () {
                 var ctrl = createController();
                 from_date = getYesterday().toISOString();
                 to_date = new Date().toISOString();
-                expect(monitorAPI.getHostCPUUtilization).toHaveBeenCalledWith(from_date, to_date, ctrl.hostLimit, 'host1');
-                expect(ctrl.totalHostCpuData[0].values[0].y).toEqual(hostCpuUsage['host1'].data[0].counter_volume);
-            });
-            it('should retrieve RAM usage datum of given host properly', function () {
-                var ctrl = createController();
-                from_date = getYesterday().toISOString();
-                to_date = new Date().toISOString();
-                expect(monitorAPI.getHostRAMUtilization).toHaveBeenCalledWith(from_date, to_date, ctrl.hostLimit, 'host1');
-                expect(ctrl.totalHostRamData[0].values[0].y).toEqual(hostRamUsage['host1'].data[0].counter_volume);
-            });
-            it('should retrieve Network usage datum of given host properly', function () {
-                var ctrl = createController();
-                from_date = getYesterday().toISOString();
-                to_date = new Date().toISOString()
-                expect(monitorAPI.getHostNetworkUtilization).toHaveBeenCalledWith(from_date, to_date, ctrl.hostLimit, 'host1');
-                expect(ctrl.totalHostIncomingNetworkData[0].values[0].y).toEqual(hostIncomingNetworkUsage['host1'].data[0].counter_volume);
-                expect(ctrl.totalHostOutgoingNetworkData[0].values[0].y).toEqual(hostOutcomingNetworkUsage['host1'].data[0].counter_volume);
-            });
-            it('should retrieve Disk usage datum of given host properly', function () {
-                var ctrl = createController();
-                from_date = getYesterday().toISOString();
-                to_date = new Date().toISOString()
-                expect(monitorAPI.getHostDiskUtilization).toHaveBeenCalledWith(from_date, to_date, ctrl.hostLimit, 'host1');
-                expect(ctrl.totalHostDiskData[0].values[0].y).toEqual(hostDiskUsage['host1'].data[0].counter_volume);
+                expect(monitorAPI.getHardwareMeasures).toHaveBeenCalledWith('hardware.cpu.util', 'host1', from_date, to_date);
+                expect(ctrl.totalHostCpuData[0].values[0].y).toEqual(hostCpuUsage[0][2]);
             });
         });
 

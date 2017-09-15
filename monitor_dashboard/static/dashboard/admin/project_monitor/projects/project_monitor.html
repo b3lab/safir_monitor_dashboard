@@ -11,50 +11,65 @@
                  id-prop="name"
                  display-prop="name">
     </multiselect>
-    <div align="center" style="margin-top: 15px">
+
+    <div class="row" style="background: #f9f9f9; border-radius: 6px;">
+        <div align="center" style="margin-top: 15px">
+            <div>
+                <div class="form-group">
+                    <div class="btn-group">
+                        <label class="btn btn-default" id="resources"
+                               ng-repeat="option in ctrl.toggleButtonOptions"
+                               ng-model="ctrl.toggled"
+                               uib-btn-radio="option.value">{$ ::option.label $}</label>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div>
+            <div ng-if="ctrl.toggled == 1">
+                <div>
+                    <nvd3 options="ctrl.chartOptions" config="ctrl.config" data="ctrl.totalCpuData"
+                          class="with-3d-shadow with-transitions"></nvd3>
+                </div>
+            </div>
+            <div ng-if="ctrl.toggled == 2">
+                <div>
+                    <nvd3 options="ctrl.chartOptions" config="ctrl.config" data="ctrl.totalRamData"
+                          class="with-3d-shadow with-transitions"></nvd3>
+                </div>
+            </div>
+            <div ng-if="ctrl.toggled == 3">
+                <div>
+                    <nvd3 options="ctrl.chartOptions" config="ctrl.config" data="ctrl.totalDiskData"
+                          class="with-3d-shadow with-transitions"></nvd3>
+                </div>
+            </div>
+            <div ng-if="ctrl.toggled == 4">
+                <div>
+                    <nvd3 options="ctrl.networkChartOptions" config="ctrl.config"
+                          data="ctrl.totalIncomingNetworkData" class="with-3d-shadow with-transitions"></nvd3>
+                </div>
+            </div>
+            <div ng-if="ctrl.toggled == 5">
+                <div>
+                    <nvd3 options="ctrl.networkChartOptions" config="ctrl.config"
+                          data="ctrl.totalOutgoingNetworkData" class="with-3d-shadow with-transitions"></nvd3>
+                </div>
+            </div>
+        </div>
+        <div align="center" style="margin-top: 20px">
             <div class="form-group">
                 <div class="btn-group">
-                    <label class="btn btn-default" id="resources"
-                           ng-repeat="option in ctrl.toggleButtonOptions"
-                           ng-model="ctrl.toggled"
-                           btn-radio="option.value">{$ ::option.label $}</label>
+                    <label class="btn btn-default" id="time"
+                           ng-repeat="option in ctrl.toggleTimeButtonOptions"
+                           ng-model="ctrl.toggledTime"
+                           ng-click="ctrl.timeChanged()"
+                           uib-btn-radio="option.value">{$ ::option.label $}</label>
                 </div>
             </div>
         </div>
     </div>
-    <div class="row">
-        <div ng-if="ctrl.toggled == 1">
-            <div style="background: #f9f9f9; border-radius: 6px;">
-                <nvd3 options="ctrl.chartOptions" config="ctrl.config" data="ctrl.totalCpuData"
-                      class="with-3d-shadow with-transitions"></nvd3>
-            </div>
-        </div>
-        <div ng-if="ctrl.toggled == 2">
-            <div style="background: #f9f9f9; border-radius: 6px;">
-                <nvd3 options="ctrl.chartOptions" config="ctrl.config" data="ctrl.totalRamData"
-                      class="with-3d-shadow with-transitions"></nvd3>
-            </div>
-        </div>
-        <div ng-if="ctrl.toggled == 3">
-            <div style="background: #f9f9f9; border-radius: 6px;">
-                <nvd3 options="ctrl.chartOptions" config="ctrl.config" data="ctrl.totalDiskData"
-                      class="with-3d-shadow with-transitions"></nvd3>
-            </div>
-        </div>
-        <div ng-if="ctrl.toggled == 4">
-            <div style="background: #f9f9f9; border-radius: 6px;">
-                <nvd3 options="ctrl.networkChartOptions" config="ctrl.config"
-                      data="ctrl.totalIncomingNetworkData" class="with-3d-shadow with-transitions"></nvd3>
-            </div>
-        </div>
-        <div ng-if="ctrl.toggled == 5">
-            <div style="background: #f9f9f9; border-radius: 6px;">
-                <nvd3 options="ctrl.networkChartOptions" config="ctrl.config"
-                      data="ctrl.totalOutgoingNetworkData" class="with-3d-shadow with-transitions"></nvd3>
-            </div>
-        </div>
-    </div>
+
     <table hz-table ng-cloak
            st-table="ctrl.displayedCollection"
            st-safe-src="ctrl.instanceList"
@@ -116,8 +131,7 @@
                        hz-select="item"
                        ng-change="ctrl.filterUtils()">
             </td>
-            <td class="expander"
-                ng-click="ctrl.computeBusyUsageTime(item.id,item.cpuUsage,item.ramUsage,item.diskUsage)">
+            <td class="expander">
     <span class="fa fa-chevron-right"
           hz-expand-detail
           duration="200">
@@ -127,13 +141,13 @@
             <td class="rsp-p1">{$ ::item.name $}</td>
             <td class="rsp-p1">{$ ::item.status $}</td>
             <td class="rsp-p1">
-             <span ng-if="item.cpuUsage[item.cpuUsage.length-1].y < 20.0" class="label label-default">
+             <span ng-if="item.currentCpuUsage < 20.0" class="label label-default">
                  {$ 'IDLE' | translate $}
              </span>
-                <span ng-if="item.cpuUsage[item.cpuUsage.length-1].y >= 80.0" class="label label-danger">
+                <span ng-if="item.currentCpuUsage >= 80.0" class="label label-danger">
                  {$ 'CRITICAL' | translate $}
              </span>
-                <span ng-if="item.cpuUsage[item.cpuUsage.length-1].y < 80.0 && item.cpuUsage[item.cpuUsage.length-1].y >= 20"
+                <span ng-if="item.currentCpuUsage < 80.0 && item.currentCpuUsage >= 20"
                       class="label label-success">
                  {$ 'IDEAL' | translate $}
              </span>
@@ -207,19 +221,15 @@
                     <hr class="header_rule">
                     <dl class="dl-horizontal">
                         <dt>{$ 'CPU Usage' | translate $}</dt>
-                        <dd>{$ item.cpuUsage[item.cpuUsage.length-1].y $} {$ '%' $}</dd>
+                        <dd>{$ item.currentCpuUsage $} {$ '%' $}</dd>
                         <dt>{$ 'RAM Usage' | translate $}</dt>
-                        <dd>{$ item.ramUsage[item.ramUsage.length-1].y $} {$ '%' $}</dd>
+                        <dd>{$ item.currentRamUsage $} {$ '%' $}</dd>
                         <dt>{$ 'Disk Usage' | translate $}</dt>
-                        <dd>{$ item.diskUsage[item.diskUsage.length-1].y $} {$ '%' $}</dd>
+                        <dd>{$ item.currentDiskUsage $} {$ '%' $}</dd>
                         <dt>{$ 'Incoming Network BW' | translate $}</dt>
-                        <dd>{$ item.incomingNetworkUsage[item.incomingNetworkUsage.length-1].y $} {$ 'Mbps' |
-                            translate $}
-                        </dd>
+                        <dd>{$ item.currentIncomingNetworkUsage $} {$ 'Mbps' | translate $}</dd>
                         <dt>{$ 'Outgoing Network BW' | translate $}</dt>
-                        <dd>{$ item.outgoingNetworkUsage[item.outgoingNetworkUsage.length-1].y $} {$ 'Mbps' |
-                            translate $}
-                        </dd>
+                        <dd>{$ item.currentOutgoingNetworkUsage $} {$ 'Mbps' | translate $}</dd>
                     </dl>
                 </div>
             </td>

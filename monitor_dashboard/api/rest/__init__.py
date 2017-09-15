@@ -19,5 +19,6 @@ in https://wiki.openstack.org/wiki/APIChangeGuidelines.
 """
 
 # import REST API modules here
-from monitor_dashboard.api.rest import ceilometer  # noqa
+from monitor_dashboard.api.rest import aodh  # noqa
+from monitor_dashboard.api.rest import gnocchi  # noqa
 from monitor_dashboard.api.rest import instance_monitor  # noqa

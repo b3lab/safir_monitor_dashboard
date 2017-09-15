@@ -2,8 +2,7 @@
 
 <div ng-controller="MonitorSamplesTableController as ctrl">
 
-    <div align="center" class="row">
-
+    <div align="center" class="row"">
         <div class="col-sm-4 col-xs-6 fix-it">
             <div>
                 <nvd3 options="ctrl.pieCharOptions"
@@ -49,29 +48,42 @@
                     <label class="btn btn-default" id="resources"
                            ng-repeat="option in ctrl.toggleButtonOptions"
                            ng-model="ctrl.toggled"
-                           btn-radio="option.value">{$ ::option.label $}</label>
+                           uib-btn-radio="option.value">{$ ::option.label $}</label>
                 </div>
             </div>
         </div>
-        <div ng-if="ctrl.toggled == 1">
-            <nvd3 options="ctrl.chartOptions" config="ctrl.config" data="ctrl.totalCpuData"
-                  class="with-3d-shadow with-transitions"></nvd3>
+        <div>
+            <div ng-if="ctrl.toggled == 1">
+                <nvd3 options="ctrl.chartOptions" config="ctrl.config" data="ctrl.totalCpuData"
+                      class="with-3d-shadow with-transitions"></nvd3>
+            </div>
+            <div ng-if="ctrl.toggled == 2">
+                <nvd3 options="ctrl.chartOptions" config="ctrl.config" data="ctrl.totalRamData"
+                      class="with-3d-shadow with-transitions"></nvd3>
+            </div>
+            <div ng-if="ctrl.toggled == 3">
+                <nvd3 options="ctrl.chartOptions" config="ctrl.config" data="ctrl.totalDiskData"
+                      class="with-3d-shadow with-transitions"></nvd3>
+            </div>
+            <div ng-if="ctrl.toggled == 4">
+                <nvd3 options="ctrl.networkChartOptions" config="ctrl.config"
+                      data="ctrl.totalIncomingNetworkData" class="with-3d-shadow with-transitions"></nvd3>
+            </div>
+            <div ng-if="ctrl.toggled == 5">
+                <nvd3 options="ctrl.networkChartOptions" config="ctrl.config"
+                      data="ctrl.totalOutgoingNetworkData" class="with-3d-shadow with-transitions"></nvd3>
+            </div>
         </div>
-        <div ng-if="ctrl.toggled == 2">
-            <nvd3 options="ctrl.chartOptions" config="ctrl.config" data="ctrl.totalRamData"
-                  class="with-3d-shadow with-transitions"></nvd3>
-        </div>
-        <div ng-if="ctrl.toggled == 3">
-            <nvd3 options="ctrl.chartOptions" config="ctrl.config" data="ctrl.totalDiskData"
-                  class="with-3d-shadow with-transitions"></nvd3>
-        </div>
-        <div ng-if="ctrl.toggled == 4">
-            <nvd3 options="ctrl.networkChartOptions" config="ctrl.config"
-                  data="ctrl.totalIncomingNetworkData" class="with-3d-shadow with-transitions"></nvd3>
-        </div>
-        <div ng-if="ctrl.toggled == 5">
-            <nvd3 options="ctrl.networkChartOptions" config="ctrl.config"
-                  data="ctrl.totalOutgoingNetworkData" class="with-3d-shadow with-transitions"></nvd3>
+        <div align="center" style="margin-top: 20px">
+            <div class="form-group">
+                <div class="btn-group">
+                    <label class="btn btn-default" id="time"
+                           ng-repeat="option in ctrl.toggleTimeButtonOptions"
+                           ng-model="ctrl.toggledTime"
+                           ng-click="ctrl.timeChanged()"
+                           uib-btn-radio="option.value">{$ ::option.label $}</label>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -136,8 +148,7 @@
                        hz-select="item"
                        ng-change="ctrl.filterUtils()">
             </td>
-            <td class="expander"
-                ng-click="ctrl.computeBusyUsageTime(item.id,item.cpuUsage,item.ramUsage,item.diskUsage)">
+            <td class="expander">
         <span class="fa fa-chevron-right"
               hz-expand-detail
               duration="200">
@@ -225,24 +236,15 @@
                     <hr class="header_rule">
                     <dl class="dl-horizontal">
                         <dt>{$ 'CPU Usage' | translate $}</dt>
-                        <dd>{$ item.cpuUsage[item.cpuUsage.length-1].y $} {$ '%' $}</dd>
+                        <dd>{$ item.currentCpuUsage $} {$ '%' $}</dd>
                         <dt>{$ 'RAM Usage' | translate $}</dt>
-                        <dd>{$ item.ramUsage[item.ramUsage.length-1].y $} {$ '%' $}</dd>
+                        <dd>{$ item.currentRamUsage $} {$ '%' $}</dd>
                         <dt>{$ 'Disk Usage' | translate $}</dt>
-                        <dd>{$ item.diskUsage[item.diskUsage.length-1].y $} {$ '%' $}</dd>
+                        <dd>{$ item.currentDiskUsage $} {$ '%' $}</dd>
                         <dt>{$ 'Incoming Network BW' | translate $}</dt>
-                        <dd>{$ item.incomingNetworkUsage[item.incomingNetworkUsage.length-1].y $} {$ 'Mbps' | translate
-                            $}
-                        </dd>
+                        <dd>{$ item.currentOutgoingNetworkUsage $} {$ 'Mbps' | translate $}</dd>
                         <dt>{$ 'Outgoing Network BW' | translate $}</dt>
-                        <dd>{$ item.outgoingNetworkUsage[item.outgoingNetworkUsage.length-1].y $} {$ 'Mbps' | translate
-                            $}
-                        </dd>
-                    </dl>
-                    <dl class="dl-horizontal" ng-if="item.highestUsagePeriod.length  > 0">
-                        <h4>{$ 'Instance Busy Period' | translate $}</h4>
-                        <dt>{$ 'Busy Period' | translate $}</dt>
-                        <dd>{$ item.highestUsagePeriod $}</dd>
+                        <dd>{$ item.currentOutgoingNetworkUsage $} {$ 'Mbps' | translate  $}</dd>
                     </dl>
                     <h4 ng-if="item.alarms.length > 0">{$ 'Alarm List' | translate $}</h4>
                     <dl class="dl-horizontal" ng-repeat="alarm in item.alarms" ng-if="item.alarms.length > 0">

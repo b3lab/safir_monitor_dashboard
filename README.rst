@@ -4,7 +4,7 @@ Safir Monitor Dashboard
 Safir Monitor Dashboard is an Openstack Horizon plugin developed to visualize the collected utilization data
 of the physical and virtual machines in the clouds. Safir Monitor Dashboard currently visualizes  CPU, RAM, disc,
 incoming network and outgoing network utilization. Openstack Telemetry Service (Ceilometer) is used to collect the
-data from the cloud.  
+data from the cloud. Safir Monitor Dashboard uses Gnocchi api to get the collected data as of release v2.0.
 
 Installation
 ============
@@ -58,16 +58,6 @@ Configuration
     AODH_ALARM_ACTIONS = ['<ALARM-SERVICE-URL>']
     AODH_OK_ACTIONS = ['<ALARM-SERVICE-URL>']
   
-    PROVIDER_NETWORK_INTERFACE = "<network-interface>"
-    MONITOR_DISK_DEVICE = "<disk-device>"
-  
-    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  
-    EMAIL_HOST =  
-    EMAIL_HOST_USER =  
-    EMAIL_HOST_PASSWORD =  
-    EMAIL_PORT =  
-    EMAIL_USE_TLS =  
-  
 * Collect Safir Monitor Dashboard static files on Horizon and restart Apache2 server  
   
 .. sourcecode:: console
@@ -86,8 +76,9 @@ Configuration
     compute_monitors = nova.compute.monitors.cpu.virt_driver  
   
 * Configure Ceilometer service to collect utilization data as shown in the 
-  {SAFIR_MONITOR_DASHBOARD_DIR}/pipeline.yaml.controller_example file  
+  {SAFIR_MONITOR_DASHBOARD_DIR}/polling.yaml.example file
 
   
 * Install SNMP server to compute nodes to monitor them.  
+
 

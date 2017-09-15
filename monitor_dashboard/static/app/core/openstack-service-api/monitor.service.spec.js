@@ -57,69 +57,6 @@
 
         var tests = [
             {
-                func: 'getSamples',
-                method: 'get',
-                path: '/api/ceilometer/samples/hardware.cpu.util/undefined/undefined/undefined/100/',
-                error: 'Unable to retrieve telemetry samples.',
-                testInput: ['hardware.cpu.util', 'undefined', 'undefined', 'undefined', 100]
-            },
-            {
-                func: 'getInstanceCPUUtilization',
-                method: 'get',
-                path: '/api/ceilometer/instance/cpuutilization/undefined/undefined/100/undefined/',
-                error: 'Unable to retrieve instance CPU utilizations.',
-                testInput: ['undefined', 'undefined', 100, 'undefined']
-            },
-            {
-                func: 'getInstanceRamUtilization',
-                method: 'get',
-                path: '/api/ceilometer/instance/ramutilization/undefined/undefined/100/undefined/',
-                error: 'Unable to retrieve instance RAM utilizations.',
-                testInput: ['undefined', 'undefined', 100, 'undefined']
-            },
-            {
-                func: 'getInstanceDiskUtilization',
-                method: 'get',
-                path: '/api/ceilometer/instance/diskutilization/undefined/undefined/100/undefined/',
-                error: 'Unable to retrieve instance disk utilizations.',
-                testInput: ['undefined', 'undefined', 100, 'undefined']
-            },
-            {
-                func: 'getInstanceNetworkUtilization',
-                method: 'get',
-                path: '/api/ceilometer/instance/networkutilization/undefined/undefined/100/undefined/',
-                error: 'Unable to retrieve instance network utilizations.',
-                testInput: ['undefined', 'undefined', 100, 'undefined']
-            },
-            {
-                func: 'getHostCPUUtilization',
-                method: 'get',
-                path: '/api/ceilometer/host/cpuutilization/undefined/undefined/100/undefined/',
-                error: 'Unable to retrieve host CPU utilizations.',
-                testInput: ['undefined', 'undefined', 100, 'undefined']
-            },
-            {
-                func: 'getHostRAMUtilization',
-                method: 'get',
-                path: '/api/ceilometer/host/ramutilization/undefined/undefined/100/undefined/',
-                error: 'Unable to retrieve host RAM utilizations.',
-                testInput: ['undefined', 'undefined', 100, 'undefined']
-            },
-            {
-                func: 'getHostDiskUtilization',
-                method: 'get',
-                path: '/api/ceilometer/host/diskutilization/undefined/undefined/100/undefined/',
-                error: 'Unable to retrieve host disk utilizations.',
-                testInput: ['undefined', 'undefined', 100, 'undefined']
-            },
-            {
-                func: 'getHostNetworkUtilization',
-                method: 'get',
-                path: '/api/ceilometer/host/networkutilization/undefined/undefined/100/undefined/',
-                error: 'Unable to retrieve host network utilizations.',
-                testInput: ['undefined', 'undefined', 100, 'undefined']
-            },
-            {
                 func: 'getHosts',
                 method: 'get',
                 path: '/api/instancemonitor/hostlist/',
@@ -133,16 +70,30 @@
                 testInput: ['de1ca16c579242b58dc1a07871a04189', 1]
             },
             {
+                func: 'getMeasures',
+                method: 'get',
+                path: '/api/gnocchi/measures/undefined/undefined/undefined/undefined/undefined/',
+                error: 'Unable to retrieve gnocchi meaures.',
+                testInput: ['undefined', 'undefined', 'undefined', 'undefined', 'undefined']
+            },
+            {
+                func: 'getHardwareMeasures',
+                method: 'get',
+                path: '/api/gnocchi/hardware_measures/undefined/undefined/undefined/undefined/',
+                error: 'Unable to retrieve gnocchi hardware meaures.',
+                testInput: ['undefined', 'undefined', 'undefined', 'undefined']
+            },
+            {
                 func: 'getAlarms',
                 method: 'get',
-                path: '/api/ceilometer/alarms/',
+                path: '/api/aodh/alarms/',
                 error: 'Unable to retrieve alarm list.'
             },
 
             {
                 func: 'launchAlarm',
                 method: 'put',
-                path: '/api/ceilometer/alarms/',
+                path: '/api/aodh/alarms/',
                 data: {alarm: 'alarm'},
                 error: 'Unable to launch alarm.',
                 testInput: [
@@ -154,7 +105,7 @@
             {
                 func: 'deleteAlarm',
                 method: 'put',
-                path: '/api/ceilometer/deletealarm/',
+                path: '/api/aodh/alarms/delete/',
                 data: {alarm: 'alarm'},
                 error: 'Unable to delete alarm.',
                 testInput: [

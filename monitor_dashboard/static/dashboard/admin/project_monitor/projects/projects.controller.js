@@ -55,6 +55,10 @@
             ctrl.instanceList = [];
             ctrl.allselected = true;
             ctrl.toggled = 1;
+            ctrl.toggledTime = 1;
+
+            ctrl.from_date = getYesterday().toISOString();
+            ctrl.to_date = new Date().toISOString();
 
             ctrl.currentProject = '';
             keystoneapi.getCurrentUserSession().then(getCurrentUserSession);
@@ -62,6 +66,11 @@
             configCharts();
             nv.models.tooltip().duration(0);
 
+            ctrl.toggleTimeButtonOptions = [
+                {label: gettext('Daily'), value: 1},
+                {label: gettext('Weekly'), value: 2},
+                {label: gettext('Monthly'), value: 3}
+            ];
             ctrl.toggleButtonOptions = [
                 {label: gettext('CPU Usage'), value: 1},
                 {label: gettext('RAM Usage'), value: 2},
@@ -149,6 +158,11 @@
                                 diskUsage:[],
                                 incomingNetworkUsage:[],
                                 outgoingNetworkUsage:[],
+                                currentCpuUsage: null,
+                                currentRamUsage: null,
+                                currentDiskUsage: null,
+                                currentIncomingNetworkUsage: null,
+                                currentOutgoingNetworkUsage: null,
                                 selected:true,
                                 color:response.items[i].color,
                                 host:response.items[i].host,
@@ -158,7 +172,7 @@
                 ctrl.instancesCache[instance.project_id][instance.id] = instance;
                 updateInstanceList([instance]);
 
-                getUtilizationData(instance.id);
+                getUtilizationData(instance.project_id, instance.id);
             }
 
             console.timeEnd('getInstances');
@@ -172,85 +186,189 @@
             }
         }
 
-        function getUtilizationData(instance_id) {
-            // sample count for one instance per day if collected every ten minutes = 144
-            var limit = 144;
-            var from_date = getYesterday().toISOString();
-            var to_date = new Date().toISOString();
-
-            api.getInstanceCPUUtilization(from_date, to_date, limit, instance_id).success(fillCpuUtilization);
-            api.getInstanceRamUtilization(from_date, to_date, limit, instance_id).success(fillMemoryUtilization);
-            api.getInstanceDiskUtilization(from_date, to_date, limit, instance_id).success(fillDiskUtilization);
-            api.getInstanceNetworkUtilization(from_date, to_date, limit, instance_id).success(fillNetworkUtilization);
-        }
-
-        function fillCpuUtilization(response) {
-            console.time('fillCpuUtilization');
-            if (response.items != undefined) {
-                addUtilization(response.items,
-                    'cpuUsage');
-            }
-            console.timeEnd('fillCpuUtilization');
-        }
-
-        function fillMemoryUtilization(response) {
-            console.time('fillMemoryUtilization');
-            if (response.items != undefined) {
-                addUtilization(response.items,
-                    'ramUsage');
-            }
-            console.timeEnd('fillMemoryUtilization');
-        }
-
-        function fillDiskUtilization(response) {
-            console.time('fillDiskUtilization');
-            if (response.items != undefined) {
-                addUtilization(response.items,
-                    'diskUsage');
-            }
-            console.timeEnd('fillDiskUtilization');
-        }
-
-        function fillNetworkUtilization(response) {
-            console.time('fillNetworkUtilization');
-            var incomingtraffic = response.incomingtraffic;
-            var outgoingtraffic = response.outgoingtraffic;
-
-            if (incomingtraffic != undefined) {
-                addUtilization(incomingtraffic,
-                    'incomingNetworkUsage');
-            }
-            if (outgoingtraffic != undefined) {
-                addUtilization(outgoingtraffic,
-                    'outgoingNetworkUsage');
+        ctrl.timeChanged = function () {
+            console.log('Time Changed');
+            if (ctrl.toggledTime == 1) {
+                ctrl.from_date = getYesterday().toISOString();
+            } else if (ctrl.toggledTime == 2) {
+                ctrl.from_date = getLastWeek().toISOString();
+            } else {
+                ctrl.from_date = getLastMonth().toISOString();
             }
 
-            console.timeEnd('fillNetworkUtilization');
-        }
+            ctrl.totalCpuData = [];
+            ctrl.totalRamData = [];
+            ctrl.totalDiskData = [];
+            ctrl.totalIncomingNetworkData = [];
+            ctrl.totalOutgoingNetworkData = [];
 
-        function addUtilization(data, instance_data) {
-            for (var project_id in data) {
-                if (data.hasOwnProperty(project_id)) {
-                    for (var instance_id in data[project_id]) {
-                        if (data[project_id].hasOwnProperty(instance_id)) {
-                            var util_data = data[project_id][instance_id].data;
-                            var utils = [];
+            for (var project_id in ctrl.instancesCache){
+                if (ctrl.instancesCache.hasOwnProperty(project_id)) {
+                    for (var instance_id in ctrl.instancesCache[project_id]) {
+                        if (ctrl.instancesCache[project_id].hasOwnProperty(instance_id)) {
+                            var instance = ctrl.instancesCache[project_id][instance_id];
+                            instance.cpuUsage = [];
+                            instance.ramUsage = [];
+                            instance.diskUsage = [];
+                            instance.incomingNetworkUsage = [];
+                            instance.outgoingNetworkUsage = [];
 
-                            for (var i = 0; i < util_data.length; i++) {
-                                var timestamp = new Date(util_data[i].timestamp);
-                                var volume = parseFloat(util_data[i].counter_volume);
-                                utils.push({x: timestamp, y: volume});
-                            }
-                            if (ctrl.instancesCache.hasOwnProperty(project_id) &&
-                                ctrl.instancesCache[project_id].hasOwnProperty(instance_id) &&
-                                ctrl.instancesCache[project_id][instance_id].hasOwnProperty(instance_data)) {
-                                ctrl.instancesCache[project_id][instance_id][instance_data] = utils;
-                            }
+                            getUtilizationData(project_id, instance_id);
                         }
                     }
                 }
             }
-            resetChart();
+        };
+
+        function getYesterday() {
+            return new Date(new Date().getTime() - (24 * 60 * 60 * 1000));
+        }
+
+        function getLastWeek() {
+            var today = new Date();
+            return new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7);
+        }
+
+        function getLastMonth() {
+            var today = new Date();
+            return new Date(today.getFullYear(), today.getMonth(), today.getDate() - 30);
+        }
+
+        function getUtilizationData(project_id, instance_id) {
+
+            api.getMeasures('cpu_util',instance_id, project_id, ctrl.from_date, ctrl.to_date).success(getMeasures);
+            api.getMeasures('memory_util',instance_id, project_id, ctrl.from_date, ctrl.to_date).success(getMeasures);
+            api.getMeasures('disk_util',instance_id, project_id, ctrl.from_date, ctrl.to_date).success(getMeasures);
+            api.getMeasures('network.incoming.bytes.rate',instance_id, project_id, ctrl.from_date, ctrl.to_date).success(getMeasures);
+            api.getMeasures('network.outgoing.bytes.rate',instance_id, project_id, ctrl.from_date, ctrl.to_date).success(getMeasures);
+        }
+
+       function getMeasures(response) {
+            if (response.metric_name != undefined &&
+                response.project_id != undefined &&
+                response.instance_id != undefined &&
+                response.measures != undefined) {
+
+                var project_id = response.project_id;
+                var instance_id = response.instance_id;
+
+
+                for (var i = 0; i < response.measures.length; ++i) {
+                    var resource_id = response.measures[i].resource_id;
+                    var util_data = response.measures[i].utils;
+                    var utils = [];
+                    for (var j = 0; j < util_data.length; j++) {
+                        var timestamp = new Date(util_data[j][0]);
+                        var volume = parseFloat(util_data[j][2]);
+                        utils.push({x: timestamp, y: volume});
+                    }
+
+                    if (ctrl.instancesCache.hasOwnProperty(project_id) &&
+                        ctrl.instancesCache[project_id].hasOwnProperty(instance_id)) {
+
+                        var keyname = makeKeyName(response.metric_name,
+                                                  instance_id,
+                                                  ctrl.instancesCache[project_id][instance_id].name,
+                                                  resource_id);
+                        setUtilData(ctrl.instancesCache[project_id][instance_id],
+                                    utils,
+                                    response.metric_name,
+                                    keyname);
+                    }
+                }
+
+            }
+        }
+
+        function makeKeyName(metric_name, instance_id, instance_name, resource_id) {
+            // resource id is the instance id for cpu and memory metrics but,
+            // like 9cf62206-8d20-4711-a505-147a5c17ebe6-vda for disk metrics, and
+            // instance-00000006-9cf62206-8d20-4711-a505-147a5c17ebe6-tapbeddb63b-19 for network metrics
+            // for a user-friendly view we will convert them to be like
+            // instance_name or instance_name-vda or instance_name-tapbeddb63b-19
+            if (resource_id == instance_id) {
+                return instance_name;
+            }
+
+            if (metric_name.indexOf("network") !== -1) {
+                resource_id = resource_id.substring(resource_id.indexOf(instance_id));
+                return resource_id.replace(instance_id, instance_name);
+            }
+
+            if (metric_name.indexOf("disk") !== -1) {
+                return resource_id.replace(instance_id, instance_name);
+            }
+        }
+
+        function setUtilData (instance, utils, metric_name, keyname) {
+            var color = instance.color;
+            var instance_data = '';
+            var total_data = '';
+
+            if (metric_name == 'cpu_util') {
+                instance_data = 'cpuUsage';
+                total_data = 'totalCpuData';
+            }
+            else if (metric_name == 'memory_util') {
+                instance_data = 'ramUsage';
+                total_data = 'totalRamData';
+            }
+            else if (metric_name == 'disk_util') {
+                instance_data = 'diskUsage';
+                total_data = 'totalDiskData';
+            }
+            else if (metric_name == 'network.incoming.bytes.rate') {
+                instance_data = 'incomingNetworkUsage';
+                total_data = 'totalIncomingNetworkData';
+            }
+            else if (metric_name == 'network.outgoing.bytes.rate') {
+                instance_data = 'outgoingNetworkUsage';
+                total_data = 'totalOutgoingNetworkData';
+            }
+
+            instance[instance_data].push({'keyname': keyname,
+                                          'utils': utils});
+
+            if (utils.length > 1) {
+                ctrl[total_data].push({
+                    values: utils,
+                    key: keyname,
+                    color: color
+                });
+            }
+
+            if (utils.length > 0) {
+                if (instance_data == "cpuUsage") {
+                    instance.currentCpuUsage = utils[utils.length - 1].y;
+                } else if (instance_data == "ramUsage") {
+                    instance.currentRamUsage = utils[utils.length - 1].y;
+                } else if (instance_data == "diskUsage") {
+                    instance.currentDiskUsage = utils[utils.length - 1].y;
+
+                    // if we get disks' utilization separately we need to calculate mean usage
+                    // if (instance.currentDiskUsage == null) {
+                    //     instance.currentDiskUsage = utils[utils.length - 1].y;
+                    // } else {
+                    //     var cnt = instance[diskUsage].length;
+                    //     instance.currentDiskUsage =
+                    //         ((instance.currentDiskUsage * (cnt - 1)) +  utils[utils.length - 1].y) / cnt;
+                    // }
+                } else if (instance_data == "incomingNetworkUsage") {
+                    if (instance.currentIncomingNetworkUsage == null) {
+                        instance.currentIncomingNetworkUsage = utils[utils.length - 1].y;
+                    } else {
+                        instance.currentIncomingNetworkUsage =
+                            instance.currentIncomingNetworkUsage + utils[utils.length - 1].y;
+                    }
+                } else if (instance_data == "outgoingNetworkUsage") {
+                    if (instance.currentOutgoingNetworkUsage == null) {
+                        instance.currentOutgoingNetworkUsage = utils[utils.length - 1].y;
+                    } else {
+                        instance.currentOutgoingNetworkUsage =
+                            instance.currentOutgoingNetworkUsage + utils[utils.length - 1].y;
+                    }
+                }
+            }
         }
 
         ctrl.filterUtils = function () {
@@ -280,49 +398,25 @@
                         ctrl.instancesCache[project_id].hasOwnProperty(instance_id)) {
 
                         var instance = ctrl.instancesCache[project_id][instance_id];
-                        if (instance.cpuUsage.length > 1)
-                            ctrl.totalCpuData.push({
-                                values: instance.cpuUsage,
-                                key: instance.name,
-                                color: instance.color
-                            });
-                        if (instance.ramUsage.length > 1)
-                            ctrl.totalRamData.push({
-                                values: instance.ramUsage,
-                                key: instance.name,
-                                color: instance.color
-                            });
-                        if (instance.diskUsage.length > 1)
-                            ctrl.totalDiskData.push({
-                                values: instance.diskUsage,
-                                key: instance.name,
-                                color: instance.color
-                            });
-                        if (instance.incomingNetworkUsage.length > 1)
-                            ctrl.totalIncomingNetworkData.push({
-                                values: instance.incomingNetworkUsage,
-                                key: instance.name,
-                                color: instance.color
-                            });
-                        if (instance.outgoingNetworkUsage.length > 1)
-                            ctrl.totalOutgoingNetworkData.push({
-                                values: instance.outgoingNetworkUsage,
-                                key: instance.name,
-                                color: instance.color
-                            });
+                        showUsage(instance, 'cpuUsage', 'totalCpuData');
+                        showUsage(instance, 'ramUsage', 'totalRamData');
+                        showUsage(instance, 'diskUsage', 'totalDiskData');
+                        showUsage(instance, 'incomingNetworkUsage', 'totalIncomingNetworkData');
+                        showUsage(instance, 'outgoingNetworkUsage', 'totalOutgoingNetworkData');
                     }
                 }
             }
         }
 
-        function getLastWeek() {
-            var today = new Date();
-            var lastWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7);
-            return lastWeek;
-        }
-
-        function getYesterday() {
-            return new Date(new Date().getTime() - (24 * 60 * 60 * 1000));
+        function showUsage(instance, instance_data, total_data) {
+            for (var i = 0; i < instance[instance_data].length; i++) {
+                if (instance[instance_data][i]['utils'].length > 1)
+                    ctrl[total_data].push({
+                        values: instance[instance_data][i]['utils'],
+                        key: instance[instance_data][i]['keyname'],
+                        color: instance.color
+                    });
+            }
         }
 
         function configCharts() {
@@ -364,7 +458,7 @@
                     "margin": {
                         "top": 20,
                         "right": 20,
-                        "bottom": 60,
+                        "bottom": 20,
                         "left": 40
                     },
                     "duration": 100,
@@ -401,6 +495,12 @@
                         "forceY": [0, 100]
                     },
                     "noData": 'Waiting for metrics...',
+                    "focusMargin": {
+                      "top": 10,
+                      "right": 20,
+                      "bottom": 0,
+                      "left": 40
+                    },
                     "showLegend": false
                 },
                 title: {

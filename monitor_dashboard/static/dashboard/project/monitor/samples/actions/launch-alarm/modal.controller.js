@@ -60,11 +60,6 @@
         ctrl.networkThreshold = 800;
         ctrl.networkThresholdError = gettext('The threshold must be a number between 0 and 1000.');
 
-        ctrl.period = 600;
-        // Period needs to be greater than the interval value in pipeline.yaml
-        // Otherwise safir-alarm-service sends message for every alarm and ok action
-        ctrl.periodError = gettext('The period must be greater than or equal to 600.');
-
         ctrl.evaluationPeriods = 3;
 
         ctrl.comparisonOptions = initComparisonOptions();
@@ -73,12 +68,23 @@
         function save() {
             ctrl.saving = true;
 
+            var metric_name = '';
+            if (ctrl.selectedResourceType.key == 'cpu')
+                metric_name = 'cpu_util';
+            else if (ctrl.selectedResourceType.key == 'ram')
+                metric_name = 'memory_util';
+            else if (ctrl.selectedResourceType.key == 'disk')
+                metric_name = 'disk_util';
+            else if (ctrl.selectedResourceType.key == 'incoming_network')
+                metric_name = 'network.incoming.bytes.rate';
+            else if (ctrl.selectedResourceType.key == 'outgoing_network')
+                metric_name = 'network.outgoing.bytes.rate';
+
             var alarm = {};
             alarm.notification_email =  ctrl.email;
-            alarm.resource_type =  ctrl.selectedResourceType.key;
+            alarm.metric_name = metric_name;
             alarm.threshold = ctrl.threshold;
             alarm.comparison_operator = ctrl.selectedComparison.key;
-            alarm.period = ctrl.period;
             alarm.evaluation_periods = ctrl.evaluationPeriods;
             alarm.resource_id = instance_id;
 

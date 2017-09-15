@@ -35,246 +35,19 @@
 
     function monitorAPI(apiService, toastService) {
         var service = {
-            getSamples: getSamples,
-            getInstanceCPUUtilization: getInstanceCPUUtilization,
-            getInstanceRamUtilization: getInstanceRamUtilization,
-            getInstanceDiskUtilization: getInstanceDiskUtilization,
-            getInstanceNetworkUtilization: getInstanceNetworkUtilization,
-            getHostCPUUtilization: getHostCPUUtilization,
-            getHostRAMUtilization: getHostRAMUtilization,
-            getHostDiskUtilization: getHostDiskUtilization,
-            getHostNetworkUtilization: getHostNetworkUtilization,
             getHosts: getHosts,
             getInstances: getInstances,
+            getMeasures: getMeasures,
+            getHardwareMeasures: getHardwareMeasures,
             getAlarms: getAlarms,
             getInstanceAlarms: getInstanceAlarms,
             launchAlarm: launchAlarm,
-            deleteAlarm: deleteAlarm,
+            deleteAlarm: deleteAlarm
         };
 
         return service;
 
         ///////////////
-
-        /**
-         * @name horizon.app.core.openstack-service-api.monitor.getSamples
-         * @description
-         * Get a list of samples
-         * @param {string} meter_name
-         * Ceilometer sample name
-         * @param {string} resource_id
-         * Ceilometer sample resource ID
-         * @param {string} from_date
-         * Samples from this date
-         * @param {string} to_date
-         * Samples until this date
-         * @param {string} limit
-         * Sample count limit
-         * The listing result is a json object with telemetry samples
-         */
-        function getSamples(meter_name, resource_id, from_date, to_date, limit) {
-            console.log('getting samples');
-            return apiService.get('/api/ceilometer/samples/' + meter_name + '/'
-                + resource_id + '/'
-                + from_date + '/'
-                + to_date + '/'
-                + limit + '/')
-                .error(function () {
-                    toastService.add('error', gettext('Unable to retrieve telemetry samples.'));
-                });
-        }
-
-        /**
-         * @name horizon.app.core.openstack-service-api.monitor.getInstanceCPUUtilization
-         * @description
-         * Get a list of instance cpu utilization samples
-         * @param {string} from_date
-         * Samples from this date
-         * @param {string} to_date
-         * Samples until this date
-         * @param {string} resource_id
-         * Ceilometer sample resource ID
-         * @param {string} limit
-         * Max sample count
-         * The listing result is a json object with cpu utilizations
-         */
-        function getInstanceCPUUtilization(from_date, to_date, limit, resource_id) {
-            return apiService.get('/api/ceilometer/instance/cpuutilization/' + from_date + '/'
-                + to_date + '/'
-                + limit + '/'
-                + resource_id + '/')
-                .error(function () {
-                    toastService.add('error', gettext('Unable to retrieve instance CPU utilizations.'));
-                });
-        }
-
-        /**
-         * @name horizon.app.core.openstack-service-api.monitor.getInstanceRamUtilization
-         * @description
-         * Get a list of instance ram utilization samples
-         * @param {string} from_date
-         * Samples from this date
-         * @param {string} to_date
-         * Samples until this date
-         * @param {string} limit
-         * Max sample count
-         * @param {string} resource_id
-         * Ceilometer sample resource ID
-         * The listing result is a json object with instance ram utilizations
-         */
-        function getInstanceRamUtilization(from_date, to_date, limit, resource_id) {
-            return apiService.get('/api/ceilometer/instance/ramutilization/' + from_date + '/'
-                + to_date + '/'
-                + limit + '/'
-                + resource_id + '/')
-                .error(function () {
-                    toastService.add('error', gettext('Unable to retrieve instance RAM utilizations.'));
-                });
-        }
-
-        /**
-         * @name horizon.app.core.openstack-service-api.monitor.getInstanceDiskUtilization
-         * @description
-         * Get a list of instance disk utilization samples
-         * @param {string} from_date
-         * Samples from this date
-         * @param {string} to_date
-         * Samples until this date
-         * @param {string} limit
-         * Max sample count
-         * @param {string} resource_id
-         * Ceilometer sample resource ID
-         * The listing result is a json object with instance disk utilizations
-         */
-        function getInstanceDiskUtilization(from_date, to_date, limit, resource_id) {
-            return apiService.get('/api/ceilometer/instance/diskutilization/' + from_date + '/'
-                + to_date + '/'
-                + limit + '/'
-                + resource_id + '/')
-                .error(function () {
-                    toastService.add('error', gettext('Unable to retrieve instance disk utilizations.'));
-                });
-        }
-
-        /**
-         * @name horizon.app.core.openstack-service-api.monitor.getInstanceNetworkUtilization
-         * @description
-         * Get a list of instance network utilization samples
-         * @param {string} from_date
-         * Samples from this date
-         * @param {string} to_date
-         * Samples until this date
-         * @param {string} limit
-         * Max sample count
-         * @param {string} resource_id
-         * Ceilometer sample resource ID
-         * The listing result is a json object with instance network utilizations
-         */
-        function getInstanceNetworkUtilization(from_date, to_date, limit, resource_id) {
-            return apiService.get('/api/ceilometer/instance/networkutilization/' + from_date + '/'
-                + to_date + '/'
-                + limit + '/'
-                + resource_id + '/')
-                .error(function () {
-                    toastService.add('error', gettext('Unable to retrieve instance network utilizations.'));
-                });
-        }
-
-        /**
-         * @name horizon.app.core.openstack-service-api.monitor.getHostCPUUtilization
-         * @description
-         * Get a list of host cpu utilization samples
-         * @param {string} from_date
-         * Samples from this date
-         * @param {string} to_date
-         * Samples until this date
-         * @param {string} limit
-         * Max sample count
-         * @param {string} resource_id
-         * Ceilometer sample resource ID
-         * The listing result is a json object with host cpu utilizations
-         */
-        function getHostCPUUtilization(from_date, to_date, limit, resource_id) {
-            return apiService.get('/api/ceilometer/host/cpuutilization/' + from_date + '/'
-                + to_date + '/'
-                + limit + '/'
-                + resource_id + '/')
-                .error(function () {
-                    toastService.add('error', gettext('Unable to retrieve host CPU utilizations.'));
-                });
-        }
-
-        /**
-         * @name horizon.app.core.openstack-service-api.monitor.getHostRAMUtilization
-         * @description
-         * Get a list of host ram utilization samples
-         * @param {string} from_date
-         * Samples from this date
-         * @param {string} to_date
-         * Samples until this date
-         * @param {string} resource_id
-         * Ceilometer sample resource ID
-         * @param {string} limit
-         * Max sample count
-         * The listing result is a json object with host ram utilizations
-         */
-        function getHostRAMUtilization(from_date, to_date, limit, resource_id) {
-            return apiService.get('/api/ceilometer/host/ramutilization/' + from_date + '/'
-                + to_date + '/'
-                + limit + '/'
-                + resource_id + '/')
-                .error(function () {
-                    toastService.add('error', gettext('Unable to retrieve host RAM utilizations.'));
-                });
-        }
-
-        /**
-         * @name horizon.app.core.openstack-service-api.monitor.getHostDiskUtilization
-         * @description
-         * Get a list of host disk utilization samples
-         * @param {string} from_date
-         * Samples from this date
-         * @param {string} to_date
-         * Samples until this date
-         * @param {string} resource_id
-         * Ceilometer sample resource ID
-         * @param {string} limit
-         * Max sample count
-         * The listing result is a json object with host disk utilizations
-         */
-        function getHostDiskUtilization(from_date, to_date, limit, resource_id) {
-            return apiService.get('/api/ceilometer/host/diskutilization/' + from_date + '/'
-                + to_date + '/'
-                + limit + '/'
-                + resource_id + '/')
-                .error(function () {
-                    toastService.add('error', gettext('Unable to retrieve host disk utilizations.'));
-                });
-        }
-
-        /**
-         * @name horizon.app.core.openstack-service-api.monitor.getHostNetworkUtilization
-         * @description
-         * Get a list of host network utilization samples
-         * @param {string} from_date
-         * Samples from this date
-         * @param {string} to_date
-         * Samples until this date
-         * @param {string} resource_id
-         * Ceilometer sample resource ID
-         * @param {string} limit
-         * Max sample count
-         * The listing result is a json object with host network utilizations
-         */
-        function getHostNetworkUtilization(from_date, to_date, limit, resource_id) {
-            return apiService.get('/api/ceilometer/host/networkutilization/' + from_date + '/'
-                + to_date + '/'
-                + limit + '/'
-                + resource_id + '/')
-                .error(function () {
-                    toastService.add('error', gettext('Unable to retrieve host network utilizations.'));
-                });
-        }
 
         /**
          * @name horizon.app.core.openstack-service-api.monitor.gethosts
@@ -306,13 +79,55 @@
         }
 
         /**
+         * @name horizon.app.core.openstack-service-api.monitor.getMeasures
+         * @description
+         * Get a list of measures for the given metric of the instance
+         * @param {string} metric_name
+         * @param {string} instance_id
+         * @param {string} project_id
+         * @param {string} start
+         * @param {string} end
+         * The listing result is a json object with measure list
+         */
+        function getMeasures(metric_name, instance_id, project_id, start, end) {
+            return apiService.get('/api/gnocchi/measures/' + metric_name + '/'
+                + instance_id + '/'
+                + project_id + '/'
+                + start + '/'
+                + end + '/')
+                .error(function () {
+                    toastService.add('error', gettext('Unable to retrieve gnocchi meaures.'));
+                });
+        }
+
+        /**
+         * @name horizon.app.core.openstack-service-api.monitor.getHardwareMeasures
+         * @description
+         * Get a list of measures for the given metric of the hypervisor host
+         * @param {string} metric_name
+         * @param {string} hostname
+         * @param {string} start
+         * @param {string} end
+         * The listing result is a json object with measure list
+         */
+        function getHardwareMeasures(metric_name, hostname, start, end) {
+            return apiService.get('/api/gnocchi/hardware_measures/' + metric_name + '/'
+                + hostname + '/'
+                + start + '/'
+                + end + '/')
+                .error(function () {
+                    toastService.add('error', gettext('Unable to retrieve gnocchi hardware meaures.'));
+                });
+        }
+
+        /**
          * @name horizon.app.core.openstack-service-api.monitor.getAlarms
          * @description
          * Get a list of alarms of the instances
          * The listing result is a json object with alarm list
          */
         function getAlarms() {
-            return apiService.get('/api/ceilometer/alarms/')
+            return apiService.get('/api/aodh/alarms/')
                 .error(function () {
                     toastService.add('error', gettext('Unable to retrieve alarm list.'));
                 });
@@ -327,7 +142,7 @@
          * The listing result is a json object with alarm list
          */
         function getInstanceAlarms(instance_id) {
-            return apiService.get('/api/ceilometer/instancealarms/' + instance_id + '/')
+            return apiService.get('/api/aodh/alarms/instances/' + instance_id + '/')
                 .error(function () {
                     toastService.add('error', gettext('Unable to retrieve instance alarm list.'));
                 });
@@ -339,7 +154,7 @@
          * Launch an alarm with the given parameters
          */
         function launchAlarm(alarm) {
-            return apiService.put('/api/ceilometer/alarms/', alarm)
+            return apiService.put('/api/aodh/alarms/', alarm)
                 .error(function () {
                     toastService.add('error', gettext('Unable to launch alarm.'));
                 });
@@ -351,7 +166,7 @@
          * Delete an alarm
          */
         function deleteAlarm(alarm) {
-            return apiService.put('/api/ceilometer/deletealarm/', alarm)
+            return apiService.put('/api/aodh/alarms/delete/', alarm)
                 .error(function () {
                     toastService.add('error', gettext('Unable to delete alarm.'));
                 });

@@ -71,10 +71,6 @@
             expect(ctrl.networkThreshold).toEqual(800);
             expect(ctrl.networkThresholdError).toBeDefined();
             expect(ctrl.networkThresholdError).toEqual('The threshold must be a number between 0 and 1000.');
-            expect(ctrl.period).toBeDefined();
-            expect(ctrl.period).toEqual(600);
-            expect(ctrl.periodError).toBeDefined();
-            expect(ctrl.periodError).toEqual('The period must be greater than or equal to 600.');
             expect(ctrl.evaluationPeriods).toBeDefined();
             expect(ctrl.evaluationPeriods).toEqual(3);
             expect(ctrl.comparisonOptions).toBeDefined();
