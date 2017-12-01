@@ -67,14 +67,22 @@ Configuration
     $ sudo service apache2 restart  
   
 * Configure Nova service to monitor compute instances like the following example and restart the service  
-  
-.. sourcecode:: cfg
 
-    notify_on_state_change = vm_and_task_state  
+Edit /etc/nova/nova.conf 
+
+.. sourcecode:: cfg 
+
+    [DEFAULT]
+    ...
     instance_usage_audit_period = hour  
     instance_usage_audit = True  
     compute_monitors = nova.compute.monitors.cpu.virt_driver  
-  
+
+    [notifications]
+    ...
+    notify_on_state_change = vm_and_task_state
+    
+
 * Configure Ceilometer service to collect utilization data as shown in the 
   {SAFIR_MONITOR_DASHBOARD_DIR}/polling.yaml.example file
 
