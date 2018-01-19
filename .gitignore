@@ -5,3 +5,7 @@ lib/
 *.egg/
 *.egg-info/
 *.pyc
+AUTHORS
+ChangeLog
+build/
+

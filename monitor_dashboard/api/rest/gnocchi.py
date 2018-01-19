@@ -15,6 +15,7 @@
 """monitor API over ceilometer
 """
 
+from django.conf import settings
 from django.views import generic
 from monitor_dashboard.api import gnocchi
 from openstack_dashboard.api.rest import urls
@@ -297,9 +298,16 @@ class HardwareMeasures(generic.View):
                                               'host_network_interface')
             for res in resources:
                 if res['host_name'] == 'snmp://' + hostname:
-                    resource_ids.append(
-                        {'id': res['id'],
-                         'original_id': res['original_resource_id']})
+                    if hasattr(settings, 'MONITORING_INTERFACES'):
+                        for interface in settings.MONITORING_INTERFACES:
+                            if interface in res['original_resource_id']:
+                                resource_ids.append(
+                                    {'id': res['id'],
+                                     'original_id': res['original_resource_id']})
+                    else:
+                        resource_ids.append(
+                            {'id': res['id'],
+                             'original_id': res['original_resource_id']})
         elif metric_name == 'hardware.disk.util':
             resources = gnocchi.get_resources(request,
                                               'host_disk')

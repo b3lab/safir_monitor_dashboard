@@ -66,17 +66,18 @@ class InstanceMonitor(generic.View):
         Example GET:
         http://localhost/api/ceilometer/instancemonitor
         """
+        search_opts = {}
         try:
-            all_tenants = int(all_tenants)
+            if int(all_tenants):
+                search_opts['all_tenants'] = True
         except:
-            all_tenants = 0
-        if project_id == '-1':
-            servers = nova.server_list(request,
-                                       all_tenants=all_tenants)[0]
-        else:
-            servers = nova.server_list(request,
-                                       search_opts={'project_id': project_id},
-                                       all_tenants=all_tenants)[0]
+            search_opts['all_tenants'] = False
+
+        if project_id != '-1':
+            search_opts['project_id'] = project_id
+
+        servers = nova.server_list(request,
+                                   search_opts=search_opts)[0]
 
         items = []
         for s in servers:

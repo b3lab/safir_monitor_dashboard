@@ -52,11 +52,15 @@ Configuration
 =============
 
 * Set the following configuration settings in {HORIZON_DIR}/openstack_dashboard/local/local_settings.py  
-  
+  AODH actions urls will be used when an alarm is launch from Monitor Panel.
+  MONITORING_INTERFACES will be used to monitor specific interfaces on hypervisor nodes.
+
 .. sourcecode:: cfg
 
     AODH_ALARM_ACTIONS = ['<ALARM-SERVICE-URL>']
     AODH_OK_ACTIONS = ['<ALARM-SERVICE-URL>']
+
+    MONITORING_INTERFACES = ['eth0', 'eth1']
   
 * Collect Safir Monitor Dashboard static files on Horizon and restart Apache2 server  
   
@@ -67,26 +71,17 @@ Configuration
     $ sudo service apache2 restart  
   
 * Configure Nova service to monitor compute instances like the following example and restart the service  
+  
+.. sourcecode:: cfg
 
-Edit /etc/nova/nova.conf 
-
-.. sourcecode:: cfg 
-
-    [DEFAULT]
-    ...
+    notify_on_state_change = vm_and_task_state  
     instance_usage_audit_period = hour  
     instance_usage_audit = True  
     compute_monitors = nova.compute.monitors.cpu.virt_driver  
-
-    [notifications]
-    ...
-    notify_on_state_change = vm_and_task_state
-    
-
+  
 * Configure Ceilometer service to collect utilization data as shown in the 
   {SAFIR_MONITOR_DASHBOARD_DIR}/polling.yaml.example file
 
   
 * Install SNMP server to compute nodes to monitor them.  
-
 

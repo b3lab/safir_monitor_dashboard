@@ -15,4 +15,3 @@ sources:
           - "hardware.memory*"
           - "hardware.disk*"
           - "hardware.network*"
-

@@ -11,11 +11,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from django.conf.urls import patterns
 from django.conf.urls import url
 from monitor_dashboard.dashboards.admin.project_monitor import views
 
-urlpatterns = patterns(
-    'monitor_dashboard.dashboards.admin.project_monitor.views',
-    url('', views.IndexView.as_view(), name='index'),
-)
+urlpatterns = [
+    url(r'^$', views.IndexView.as_view(), name='index'),
+]
