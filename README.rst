@@ -14,7 +14,7 @@ How To Use With Devstack
 
 .. sourcecode:: console  
 
-    $ git clone http://github.com/openstack-dev/devstack -b stable/ocata
+    $ git clone http://github.com/openstack-dev/devstack -b stable/pike
     $ cd devstack
     $ wget -O local.conf https://github.com/b3lab/safir_monitor_dashboard/blob/master/local.conf?raw=true
 
