@@ -89,12 +89,13 @@
          * @param {string} end
          * The listing result is a json object with measure list
          */
-        function getMeasures(metric_name, instance_id, project_id, start, end) {
+        function getMeasures(metric_name, instance_id, project_id, start, end, vcpus=null) {
             return apiService.get('/api/gnocchi/measures/' + metric_name + '/'
                 + instance_id + '/'
                 + project_id + '/'
                 + start + '/'
-                + end + '/')
+                + end + '/'
+                + vcpus + '/')
                 .error(function () {
                     toastService.add('error', gettext('Unable to retrieve gnocchi meaures.'));
                 });

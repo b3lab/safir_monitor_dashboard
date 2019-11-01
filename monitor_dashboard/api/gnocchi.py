@@ -58,3 +58,10 @@ def get_measures(request, metric_name, resource_id, start=None, stop=None):
         start=start,
         stop=stop)
     return measures
+
+
+def get_aggregated_measures(request, operations, search, start=None, stop=None):
+    measures = gnocchiclient(request).aggregates.fetch(operations,search,start=start,stop=stop)
+    return measures['measures']['aggregated']
+
+

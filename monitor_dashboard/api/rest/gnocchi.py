@@ -49,10 +49,12 @@ class Measures(generic.View):
                 r'(?P<instance_id>[^/]+)/' \
                 r'(?P<project_id>[^/]+)/' \
                 r'(?P<start>[^/]+)/' \
-                r'(?P<end>[^/]+)/$'
+                r'(?P<end>[^/]+)/' \
+                r'(?P<vcpus>[^/]+)/$'
+
 
     @rest_utils.ajax()
-    def get(self, request, metric_name, instance_id, project_id, start, end):
+    def get(self, request, metric_name, instance_id, project_id, start, end, vcpus=None):
 
         resource_ids = self.find_resource_id(request, metric_name, instance_id)
 
@@ -63,7 +65,8 @@ class Measures(generic.View):
                                            metric_name,
                                            resource_id,
                                            start,
-                                           end)
+                                           end,
+                                           vcpus)
             utils = {'resource_id': resource['original_id'],
                      'utils': g_measures}
             measures.append(utils)
@@ -73,12 +76,12 @@ class Measures(generic.View):
                 'instance_id': instance_id,
                 'measures': measures}
 
-    def get_measures(self, request, metric_name, resource_id, start, end):
+    def get_measures(self, request, metric_name, resource_id, start, end, vcpus=None):
 
+        measures = []
         if metric_name == 'memory_util' or metric_name == 'disk_util':
             # TODO(ecelik): we should check if memory_util or disk_util
             # is already in gnocchi metrics
-            measures = []
             if metric_name == 'memory_util':
                 capacity_measures = gnocchi.get_measures(request,
                                                          'memory',
@@ -94,12 +97,12 @@ class Measures(generic.View):
 
             else:  # if metric_name == 'disk_util':
                 capacity_measures = gnocchi.get_measures(request,
-                                                         'disk.capacity',
+                                                         'disk.device.capacity',
                                                          resource_id,
                                                          start,
                                                          end)
                 usage_measures = gnocchi.get_measures(request,
-                                                      'disk.allocation',
+                                                      'disk.device.allocation',
                                                       resource_id,
                                                       start,
                                                       end)
@@ -120,17 +123,22 @@ class Measures(generic.View):
                                          "{0:.2f}".format(data[2] / cap * 100.)
                                          ])
         else:
-            measures = gnocchi.get_measures(request,
-                                            metric_name,
-                                            resource_id,
-                                            start,
-                                            end)
+            measures_ori = []
+            search = "id=" + resource_id
+            if metric_name == 'cpu_util':
+                # granularity=300
+                operations = "(/ (* (/ (aggregate rate:mean (metric cpu mean)) 300000000000) 100) " + vcpus + ")"
+            elif metric_name == 'network.incoming.bytes.rate':
+                operations = "(/ (aggregate rate:mean (metric network.incoming.bytes mean)) 300)"
+            else:
+                operations = "(/ (aggregate rate:mean (metric network.outgoing.bytes mean)) 300)"
+            measures_ori = gnocchi.get_aggregated_measures(request,operations,search,start,end)
 
-            for data in measures:
+            for data in measures_ori:
                 if 'network' in metric_name:
-                    data[2] = "{0:.2f}".format(data[2] * 8.0 * bps_to_mbps)
+                    measures.append((data[0], data[1], "{0:.2f}".format(data[2] * 8.0 * bps_to_mbps)))
                 else:
-                    data[2] = "{0:.2f}".format(data[2])
+                    measures.append((data[0], data[1], "{0:.2f}".format(data[2])))
 
         return measures
 
@@ -146,14 +154,14 @@ class Measures(generic.View):
                          'original_id': res['original_resource_id']})
         # disk.capacity and disk.allocation with instance_id gives total
         # disk usage, otherwise we can get all disk devices independently
-        # elif 'disk' in metric_name:
-        #     resources = gnocchi.get_resources(request,
-        #                                       'instance_disk')
-        #     for res in resources:
-        #         if res['instance_id'] == instance_id:
-        #             resource_ids.append({
-        #                 'id': res['id'],
-        #                 'original_id': res['original_resource_id']})
+        elif 'disk' in metric_name:
+            resources = gnocchi.get_resources(request,
+                                              'instance_disk')
+            for res in resources:
+                if res['instance_id'] == instance_id:
+                    resource_ids.append({
+                        'id': res['id'],
+                        'original_id': res['original_resource_id']})
         else:
             resource_ids.append({'id': instance_id,
                                  'original_id': instance_id})
@@ -193,9 +201,9 @@ class HardwareMeasures(generic.View):
 
     def get_measures(self, request, metric_name, resource_id, start, end):
 
+        measures = []
         if metric_name == 'hardware.memory.util' or \
            metric_name == 'hardware.disk.util':
-            measures = []
             if metric_name == 'hardware.memory.util':
                 capacity_measures = gnocchi.get_measures(
                     request,
@@ -255,14 +263,11 @@ class HardwareMeasures(generic.View):
                     resource_id,
                     start,
                     end)
-            measures = []
 
             for index in range(len(cumulative_measures)):
                 if index > 0:
-                    t1 = dateutil.parser.parse(
-                        cumulative_measures[index][0])
-                    t2 = dateutil.parser.parse(
-                        cumulative_measures[index - 1][0])
+                    t1 = dateutil.parser.parse(str(cumulative_measures[index][0]))
+                    t2 = dateutil.parser.parse(str(cumulative_measures[index - 1][0]))
                     delta = t1 - t2
                     diff = (cumulative_measures[index][2] -
                             cumulative_measures[index - 1][2])
@@ -278,14 +283,17 @@ class HardwareMeasures(generic.View):
                         measures.append(data)
 
         else:
-            measures = gnocchi.get_measures(request,
-                                            metric_name,
-                                            resource_id,
-                                            start,
-                                            end)
+            measures_ori = gnocchi.get_measures(request,
+                                                metric_name,
+                                                resource_id,
+                                                start,
+                                                end)
 
-            for data in measures:
-                data[2] = "{0:.2f}".format(data[2])
+            for data in measures_ori:
+                measures.append([data[0],
+                                 data[1],
+                                 "{0:.2f}".format(data[2])
+                                 ])
 
         return measures
 
@@ -318,10 +326,11 @@ class HardwareMeasures(generic.View):
                         'original_id': res['original_resource_id']})
         else:
             resources = gnocchi.get_resources(request,
-                                              'host')
+                                              'host_disk')
             for res in resources:
-                if res['host_name'] == 'snmp://' + hostname:
-                    resource_ids.append(
-                        {'id': res['id'],
-                         'original_id': res['original_resource_id']})
+                if res['original_resource_id'] == hostname:
+                    resource_ids.append({
+                        'id': res['id'],
+                        'original_id': res['original_resource_id']})
+
         return resource_ids

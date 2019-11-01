@@ -184,7 +184,7 @@
 
                 var instance_id = instance.id;
                 var project_id = instance.project_id;
-                api.getMeasures('cpu_util',instance_id, project_id, ctrl.from_date, ctrl.to_date).success(getMeasures);
+                api.getMeasures('cpu_util',instance_id, project_id, ctrl.from_date, ctrl.to_date, instance.full_flavor.vcpus).success(getMeasures);
                 api.getMeasures('memory_util',instance_id, project_id, ctrl.from_date, ctrl.to_date).success(getMeasures);
                 api.getMeasures('disk_util',instance_id, project_id, ctrl.from_date, ctrl.to_date).success(getMeasures);
                 api.getMeasures('network.incoming.bytes.rate',instance_id, project_id, ctrl.from_date, ctrl.to_date).success(getMeasures);
