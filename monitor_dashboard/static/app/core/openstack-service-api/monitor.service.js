@@ -38,11 +38,7 @@
             getHosts: getHosts,
             getInstances: getInstances,
             getMeasures: getMeasures,
-            getHardwareMeasures: getHardwareMeasures,
-            getAlarms: getAlarms,
-            getInstanceAlarms: getInstanceAlarms,
-            launchAlarm: launchAlarm,
-            deleteAlarm: deleteAlarm
+            getHardwareMeasures: getHardwareMeasures
         };
 
         return service;
@@ -89,15 +85,14 @@
          * @param {string} end
          * The listing result is a json object with measure list
          */
-        function getMeasures(metric_name, instance_id, project_id, start, end, vcpus=null) {
-            return apiService.get('/api/gnocchi/measures/' + metric_name + '/'
+        function getMeasures(metric_name, instance_id, project_id, start, end) {
+            return apiService.get('/api/monasca/measures/' + metric_name + '/'
                 + instance_id + '/'
                 + project_id + '/'
                 + start + '/'
-                + end + '/'
-                + vcpus + '/')
+                + end + '/')
                 .error(function () {
-                    toastService.add('error', gettext('Unable to retrieve gnocchi meaures.'));
+                    toastService.add('error', gettext('Unable to retrieve monasca meaures.'));
                 });
         }
 
@@ -112,65 +107,14 @@
          * The listing result is a json object with measure list
          */
         function getHardwareMeasures(metric_name, hostname, start, end) {
-            return apiService.get('/api/gnocchi/hardware_measures/' + metric_name + '/'
+            return apiService.get('/api/monasca/hardware_measures/' + metric_name + '/'
                 + hostname + '/'
                 + start + '/'
                 + end + '/')
                 .error(function () {
-                    toastService.add('error', gettext('Unable to retrieve gnocchi hardware meaures.'));
-                });
-        }
-
-        /**
-         * @name horizon.app.core.openstack-service-api.monitor.getAlarms
-         * @description
-         * Get a list of alarms of the instances
-         * The listing result is a json object with alarm list
-         */
-        function getAlarms() {
-            return apiService.get('/api/aodh/alarms/')
-                .error(function () {
-                    toastService.add('error', gettext('Unable to retrieve alarm list.'));
-                });
-        }
-
-        /**
-         * @name horizon.app.core.openstack-service-api.monitor.getInstanceAlarms
-         * @description
-         * @param {string} instance_id
-         * instance id
-         * Get a list of alarms of the given instance
-         * The listing result is a json object with alarm list
-         */
-        function getInstanceAlarms(instance_id) {
-            return apiService.get('/api/aodh/alarms/instances/' + instance_id + '/')
-                .error(function () {
-                    toastService.add('error', gettext('Unable to retrieve instance alarm list.'));
-                });
-        }
-
-        /**
-         * @name horizon.app.core.openstack-service-api.monitor.launchAlarm
-         * @description
-         * Launch an alarm with the given parameters
-         */
-        function launchAlarm(alarm) {
-            return apiService.put('/api/aodh/alarms/', alarm)
-                .error(function () {
-                    toastService.add('error', gettext('Unable to launch alarm.'));
-                });
-        }
-
-        /**
-         * @name horizon.app.core.openstack-service-api.monitor.deleteAlarm
-         * @description
-         * Delete an alarm
-         */
-        function deleteAlarm(alarm) {
-            return apiService.put('/api/aodh/alarms/delete/', alarm)
-                .error(function () {
-                    toastService.add('error', gettext('Unable to delete alarm.'));
+                    toastService.add('error', gettext('Unable to retrieve monasca hardware meaures.'));
                 });
         }
     }
 })();
+
