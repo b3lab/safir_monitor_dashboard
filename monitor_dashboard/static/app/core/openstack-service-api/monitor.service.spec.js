@@ -72,47 +72,16 @@
             {
                 func: 'getMeasures',
                 method: 'get',
-                path: '/api/gnocchi/measures/undefined/undefined/undefined/undefined/undefined/',
-                error: 'Unable to retrieve gnocchi meaures.',
+                path: '/api/monasca/measures/undefined/undefined/undefined/undefined/undefined/',
+                error: 'Unable to retrieve monasca meaures.',
                 testInput: ['undefined', 'undefined', 'undefined', 'undefined', 'undefined']
             },
             {
                 func: 'getHardwareMeasures',
                 method: 'get',
-                path: '/api/gnocchi/hardware_measures/undefined/undefined/undefined/undefined/',
-                error: 'Unable to retrieve gnocchi hardware meaures.',
+                path: '/api/monasca/hardware_measures/undefined/undefined/undefined/undefined/',
+                error: 'Unable to retrieve monasca hardware meaures.',
                 testInput: ['undefined', 'undefined', 'undefined', 'undefined']
-            },
-            {
-                func: 'getAlarms',
-                method: 'get',
-                path: '/api/aodh/alarms/',
-                error: 'Unable to retrieve alarm list.'
-            },
-
-            {
-                func: 'launchAlarm',
-                method: 'put',
-                path: '/api/aodh/alarms/',
-                data: {alarm: 'alarm'},
-                error: 'Unable to launch alarm.',
-                testInput: [
-                    {
-                        alarm: 'alarm'
-                    }
-                ]
-            },
-            {
-                func: 'deleteAlarm',
-                method: 'put',
-                path: '/api/aodh/alarms/delete/',
-                data: {alarm: 'alarm'},
-                error: 'Unable to delete alarm.',
-                testInput: [
-                    {
-                        alarm: 'alarm'
-                    }
-                ]
             }
 
         ];

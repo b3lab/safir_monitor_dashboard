@@ -171,12 +171,11 @@
                 var hostname = response.hostname;
 
                 for (var i = 0; i < response.measures.length; ++i) {
-                    var resource_id = response.measures[i].resource_id;
-                    var util_data = response.measures[i].utils;
+                    var util_data = response.measures[i];
                     var utils = [];
                     for (var j = 0; j < util_data.length; j++) {
                         var timestamp = new Date(util_data[j][0]);
-                        var volume = parseFloat(util_data[j][2]);
+                        var volume = parseFloat(util_data[j][1]);
                         utils.push({x: timestamp, y: volume});
                     }
 
@@ -185,7 +184,7 @@
                         var found = false;
                         while (k < ctrl.hostList.length) {
                             if (ctrl.hostList[k].hypervisor_hostname == hostname) {
-                                var keyname = resource_id;
+                                var keyname = hostname;
                                 setUtilData(ctrl.hostList[k],
                                         utils,
                                         response.metric_name,

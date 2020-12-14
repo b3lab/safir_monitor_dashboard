@@ -67,12 +67,14 @@
             };
             ctrl.instanceUsagesChartData = [];
 
+            /*
             ctrl.alarmStates = {
                 OK: 0,
                 ALARM: 0,
                 INSUFFICIENT_DATA: 0
             };
             ctrl.alarmStatesChartData = [];
+            */
 
             ctrl.allselected = true;
             ctrl.toggled = 1;
@@ -165,7 +167,7 @@
             getUtilizationData();
             console.timeEnd('getInstances');
         }
-        
+
         function getUtilizationData() {
 
             ctrl.totalCpuData = [];
@@ -193,7 +195,7 @@
 
             fillInstanceStatesChartData();
 
-            api.getAlarms().then(getAlarms);
+            //api.getAlarms().then(getAlarms);
         }
 
         function fillInstanceStatesChartData() {
@@ -231,12 +233,11 @@
 
 
                 for (var i = 0; i < response.measures.length; ++i) {
-                    var resource_id = response.measures[i].resource_id;
-                    var util_data = response.measures[i].utils;
+                    var util_data = response.measures[i];
                     var utils = [];
                     for (var j = 0; j < util_data.length; j++) {
                         var timestamp = new Date(util_data[j][0]);
-                        var volume = parseFloat(util_data[j][2]);
+                        var volume = parseFloat(util_data[j][1]);
                         utils.push({x: timestamp, y: volume});
                     }
 
@@ -245,10 +246,7 @@
                         var k = 0;
                         while (k < ctrl.instanceList.length && found == false) {
                             if (ctrl.instanceList[k].id == response.instance_id) {
-                                var keyname = makeKeyName(response.metric_name,
-                                                          ctrl.instanceList[k].id,
-                                                          ctrl.instanceList[k].name,
-                                                          resource_id);
+                                var keyname = ctrl.instanceList[k].name;
                                 setUtilData(ctrl.instanceList[k],
                                             utils,
                                             response.metric_name,
@@ -282,6 +280,7 @@
             }
         }
 
+        /*
         function getAlarms(response) {
             Object.keys(response.data.items).forEach(function (id) {
                 var idx = ctrl.instanceList.map(function (x) {
@@ -323,7 +322,8 @@
                 }
             }
         }
-
+        */
+        
         function setUtilData (instance, utils, metric_name, keyname) {
             var color = instance.color;
             var instance_data = '';

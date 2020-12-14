@@ -254,22 +254,15 @@
 
 
                 for (var i = 0; i < response.measures.length; ++i) {
-                    var resource_id = response.measures[i].resource_id;
-                    var util_data = response.measures[i].utils;
+                    var timestamp = new Date(response.measures[i][0]);
+                    var volume = parseFloat(response.measures[i][1]);
                     var utils = [];
-                    for (var j = 0; j < util_data.length; j++) {
-                        var timestamp = new Date(util_data[j][0]);
-                        var volume = parseFloat(util_data[j][2]);
-                        utils.push({x: timestamp, y: volume});
-                    }
+                    utils.push({x: timestamp, y: volume});
 
                     if (ctrl.instancesCache.hasOwnProperty(project_id) &&
                         ctrl.instancesCache[project_id].hasOwnProperty(instance_id)) {
 
-                        var keyname = makeKeyName(response.metric_name,
-                                                  instance_id,
-                                                  ctrl.instancesCache[project_id][instance_id].name,
-                                                  resource_id);
+                        var keyname = ctrl.instancesCache[project_id][instance_id].name
                         setUtilData(ctrl.instancesCache[project_id][instance_id],
                                     utils,
                                     response.metric_name,
@@ -277,26 +270,6 @@
                     }
                 }
 
-            }
-        }
-
-        function makeKeyName(metric_name, instance_id, instance_name, resource_id) {
-            // resource id is the instance id for cpu and memory metrics but,
-            // like 9cf62206-8d20-4711-a505-147a5c17ebe6-vda for disk metrics, and
-            // instance-00000006-9cf62206-8d20-4711-a505-147a5c17ebe6-tapbeddb63b-19 for network metrics
-            // for a user-friendly view we will convert them to be like
-            // instance_name or instance_name-vda or instance_name-tapbeddb63b-19
-            if (resource_id == instance_id) {
-                return instance_name;
-            }
-
-            if (metric_name.indexOf("network") !== -1) {
-                resource_id = resource_id.substring(resource_id.indexOf(instance_id));
-                return resource_id.replace(instance_id, instance_name);
-            }
-
-            if (metric_name.indexOf("disk") !== -1) {
-                return resource_id.replace(instance_id, instance_name);
             }
         }
 
@@ -517,4 +490,5 @@
     }
 
 })();
+
 
